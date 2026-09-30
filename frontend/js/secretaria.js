@@ -33,7 +33,7 @@ async function cargarTurnos() {
     contenedor.textContent = 'Cargando...';
 
     try {
-        const respuesta = await fetch(`${API}/secretaria/citas-del-dia?fecha=${fecha}`);
+        const respuesta = await fetch(`${API}/api/secretaria/citas-del-dia?fecha=${fecha}`);
         const turnos = await respuesta.json();
 
         if (!respuesta.ok) {
@@ -85,7 +85,7 @@ async function abrirFicha(id_cita, id_paciente) {
     zona.textContent = 'Cargando datos del paciente...';
 
     try {
-        const respuesta = await fetch(`${API}/pacientes/${id_paciente}/ficha`);
+        const respuesta = await fetch(`${API}/api/pacientes/${id_paciente}/ficha`);
         const datos = await respuesta.json();
 
         if (!respuesta.ok) {
@@ -131,7 +131,7 @@ async function guardarYConfirmar(id_cita, id_paciente) {
             return;
         }
 
-        const respuesta = await fetch(`${API}/secretaria/citas/${id_cita}/confirmar-llegada`, {
+        const respuesta = await fetch(`${API}/api/secretaria/citas/${id_cita}/confirmar-llegada`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ secretaria_id: usuario.id_secretaria })
@@ -198,7 +198,7 @@ function reiniciarAgendar() {
 }
 
 async function buscarPacientePorDocumento(documento) {
-    const respuesta = await fetch(`${API}/pacientes/buscar?documento=${encodeURIComponent(documento)}`);
+    const respuesta = await fetch(`${API}/api/pacientes/buscar?documento=${encodeURIComponent(documento)}`);
     const datos = await respuesta.json();
     return { ok: respuesta.ok, datos };
 }
@@ -354,7 +354,7 @@ async function verHistoria(id_paciente) {
     contenedor.textContent = 'Cargando...';
 
     try {
-        const respuesta = await fetch(`${API}/pacientes/${id_paciente}/historia-clinica/resumen`);
+        const respuesta = await fetch(`${API}/api/pacientes/${id_paciente}/historia-clinica/resumen`);
         const datos = await respuesta.json();
 
         if (!respuesta.ok) {
@@ -391,7 +391,7 @@ async function verHistoriaCompleta(id_paciente) {
     contenedor.textContent = 'Cargando historial completo...';
 
     try {
-        const respuesta = await fetch(`${API}/pacientes/${id_paciente}/historia-clinica`);
+        const respuesta = await fetch(`${API}/api/pacientes/${id_paciente}/historia-clinica`);
         const datos = await respuesta.json();
 
         if (!respuesta.ok) {
@@ -427,7 +427,7 @@ async function verDocumentos(id_paciente) {
     contenedor.textContent = 'Cargando...';
 
     try {
-        const respuesta = await fetch(`${API}/pacientes/${id_paciente}/documentos`);
+        const respuesta = await fetch(`${API}/api/pacientes/${id_paciente}/documentos`);
         const datos = await respuesta.json();
 
         const atencionesHtml = datos.atenciones.length
@@ -490,7 +490,7 @@ document.getElementById('btnBuscarPaciente').addEventListener('click', async () 
     }
 
     try {
-        const respuesta = await fetch(`${API}/pacientes/buscar?documento=${encodeURIComponent(documento)}`);
+        const respuesta = await fetch(`${API}/api/pacientes/buscar?documento=${encodeURIComponent(documento)}`);
         const paciente = await respuesta.json();
 
         if (!respuesta.ok) {
@@ -523,7 +523,7 @@ let serviciosFacturacion = [];
 
 async function cargarServiciosFacturacion() {
     try {
-        const respuesta = await fetch(`${API}/facturas/servicios`);
+        const respuesta = await fetch(`${API}/api/facturas/servicios`);
         serviciosFacturacion = await respuesta.json();
     } catch (error) {
         console.error(error);
@@ -540,7 +540,7 @@ async function cargarConsultasPorFacturar() {
     contenedor.textContent = 'Cargando...';
 
     try {
-        const respuesta = await fetch(`${API}/facturas/consultas-pendientes?fecha=${fecha}`);
+        const respuesta = await fetch(`${API}/api/facturas/consultas-pendientes?fecha=${fecha}`);
         const consultas = await respuesta.json();
 
         if (!respuesta.ok) {
@@ -649,7 +649,7 @@ async function generarFactura(id_consulta) {
     }
 
     try {
-        const respuesta = await fetch(`${API}/facturas`, {
+        const respuesta = await fetch(`${API}/api/facturas`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -681,7 +681,7 @@ async function cargarFacturasDelDia() {
     contenedor.textContent = 'Cargando...';
 
     try {
-        const respuesta = await fetch(`${API}/facturas/dia?fecha=${fecha}`);
+        const respuesta = await fetch(`${API}/api/facturas/dia?fecha=${fecha}`);
         const facturas = await respuesta.json();
 
         if (!respuesta.ok) {
@@ -724,7 +724,7 @@ async function marcarPagada(id_factura) {
     if (!forma_pago) return;
 
     try {
-        const respuesta = await fetch(`${API}/facturas/${id_factura}/pagar`, {
+        const respuesta = await fetch(`${API}/api/facturas/${id_factura}/pagar`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ forma_pago })

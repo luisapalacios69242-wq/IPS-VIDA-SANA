@@ -40,7 +40,7 @@ document.getElementById('selRol').addEventListener('change', (e) => {
 async function cargarChecksEspecialidades() {
   const contenedor = document.getElementById('checksEspecialidades');
   try {
-    const respuesta = await fetch(`${API}/admin/especialidades`);
+    const respuesta = await fetch(`${API}/api/admin/especialidades`);
     const especialidades = await respuesta.json();
     contenedor.innerHTML = especialidades
       .filter(e => e.estado === 'activa')
@@ -85,7 +85,7 @@ document.getElementById('btnRegistrarUsuario').addEventListener('click', async (
   }
 
   try {
-    const respuesta = await fetch(`${API}/admin/usuarios`, {
+    const respuesta = await fetch(`${API}/api/admin/usuarios`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(datos)
@@ -113,7 +113,7 @@ async function cargarEspecialidades() {
   contenedor.textContent = 'Cargando...';
 
   try {
-    const respuesta = await fetch(`${API}/admin/especialidades`);
+    const respuesta = await fetch(`${API}/api/admin/especialidades`);
     const especialidades = await respuesta.json();
 
     contenedor.innerHTML = especialidades.map(e => `
@@ -155,7 +155,7 @@ async function cargarEspecialidades() {
 
 async function cambiarEstadoEspecialidad(id, nuevoEstado) {
   try {
-    await fetch(`${API}/admin/especialidades/${id}`, {
+    await fetch(`${API}/api/admin/especialidades/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ estado: nuevoEstado })
@@ -172,7 +172,7 @@ async function verDoctoresDeEspecialidad(id) {
   contenedor.textContent = 'Cargando...';
 
   try {
-    const respuesta = await fetch(`${API}/citas/doctores/${id}`);
+    const respuesta = await fetch(`${API}/api/citas/doctores/${id}`);
     const doctores = await respuesta.json();
 
     contenedor.innerHTML = doctores.length
@@ -197,7 +197,7 @@ document.getElementById('btnCrearEspecialidad').addEventListener('click', async 
   }
 
   try {
-    const respuesta = await fetch(`${API}/admin/especialidades`, {
+    const respuesta = await fetch(`${API}/api/admin/especialidades`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nombre, descripcion })
@@ -226,7 +226,7 @@ async function cargarServicios() {
   contenedor.textContent = 'Cargando...';
 
   try {
-    const respuesta = await fetch(`${API}/admin/servicios`);
+    const respuesta = await fetch(`${API}/api/admin/servicios`);
     const servicios = await respuesta.json();
 
     contenedor.innerHTML = servicios.map(s => `
@@ -266,7 +266,7 @@ async function cargarServicios() {
 
 async function cambiarEstadoServicio(id, nuevoEstado) {
   try {
-    await fetch(`${API}/admin/servicios/${id}`, {
+    await fetch(`${API}/api/admin/servicios/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ estado: nuevoEstado })
@@ -301,7 +301,7 @@ async function guardarPrecio(id) {
   const precio = document.getElementById(`nuevoPrecio-${id}`).value;
 
   try {
-    const respuesta = await fetch(`${API}/admin/servicios/${id}`, {
+    const respuesta = await fetch(`${API}/api/admin/servicios/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ precio })
@@ -334,7 +334,7 @@ document.getElementById('btnCrearServicio').addEventListener('click', async () =
   }
 
   try {
-    const respuesta = await fetch(`${API}/admin/servicios`, {
+    const respuesta = await fetch(`${API}/api/admin/servicios`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nombre, descripcion, precio })
@@ -403,7 +403,7 @@ function agruparHorarios(horarios) {
 async function cargarDoctoresParaHorario() {
   const select = document.getElementById('selDoctorHorario');
   try {
-    const respuesta = await fetch(`${API}/admin/doctores`);
+    const respuesta = await fetch(`${API}/api/admin/doctores`);
     const doctores = await respuesta.json();
     select.innerHTML = doctores.map(d => `<option value="${d.id_doctor}">${d.nombres} ${d.apellidos}</option>`).join('');
     if (doctores.length > 0) cargarHorariosDoctor();
@@ -422,7 +422,7 @@ async function cargarHorariosDoctor() {
   contenedor.textContent = 'Cargando...';
 
   try {
-    const respuesta = await fetch(`${API}/admin/doctores/${idDoctor}/horarios`);
+    const respuesta = await fetch(`${API}/api/admin/doctores/${idDoctor}/horarios`);
     const datos = await respuesta.json();
 
     const horariosHtml = datos.horarios.length
@@ -467,7 +467,7 @@ async function borrarHorarios(ids, descripcion) {
 
   try {
     for (const id of ids) {
-      const respuesta = await fetch(`${API}/admin/horarios/${id}`, { method: 'DELETE' });
+      const respuesta = await fetch(`${API}/api/admin/horarios/${id}`, { method: 'DELETE' });
       const datos = await respuesta.json();
 
       if (respuesta.ok) continue;
@@ -489,7 +489,7 @@ async function borrarHorarios(ids, descripcion) {
 
       if (seguir) {
         for (const id of pendientes) {
-          await fetch(`${API}/admin/horarios/${id}?forzar=1`, { method: 'DELETE' });
+          await fetch(`${API}/api/admin/horarios/${id}?forzar=1`, { method: 'DELETE' });
         }
       }
     }
@@ -522,7 +522,7 @@ document.getElementById('listaHorarios').addEventListener('click', async (e) => 
     if (!confirm(`¿Borrar el bloqueo del ${btnBloqueo.dataset.texto}?\n\nLas citas que se cancelaron al crearlo NO se restauran.`)) return;
 
     try {
-      const respuesta = await fetch(`${API}/admin/bloqueos/${btnBloqueo.dataset.id}`, { method: 'DELETE' });
+      const respuesta = await fetch(`${API}/api/admin/bloqueos/${btnBloqueo.dataset.id}`, { method: 'DELETE' });
       const datos = await respuesta.json();
       if (!respuesta.ok) alert(datos.mensaje);
     } catch (error) {
@@ -562,7 +562,7 @@ document.getElementById('btnAsignarHorario').addEventListener('click', async () 
 
   for (const dia_semana of dias) {
     try {
-      const respuesta = await fetch(`${API}/admin/horarios`, {
+      const respuesta = await fetch(`${API}/api/admin/horarios`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ doctor_id, dia_semana, hora_inicio: `${hora_inicio}:00`, hora_fin: `${hora_fin}:00` })
@@ -591,7 +591,7 @@ document.getElementById('btnAsignarHorario').addEventListener('click', async () 
 });
 
 async function enviarBloqueo(cuerpo) {
-  const respuesta = await fetch(`${API}/admin/bloqueos`, {
+  const respuesta = await fetch(`${API}/api/admin/bloqueos`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(cuerpo)
@@ -671,8 +671,8 @@ async function cargarUsuarios() {
 
   try {
     const [usuarios, especialidades] = await Promise.all([
-      fetch(`${API}/admin/usuarios`).then(r => r.json()),
-      fetch(`${API}/admin/especialidades`).then(r => r.json())
+      fetch(`${API}/api/admin/usuarios`).then(r => r.json()),
+      fetch(`${API}/api/admin/especialidades`).then(r => r.json())
     ]);
 
     especialidadesDisponibles = especialidades.filter(e => e.estado === 'activa');
@@ -772,7 +772,7 @@ async function guardarEdicionUsuario(id_usuario, rol) {
   }
 
   try {
-    const respuesta = await fetch(`${API}/admin/usuarios/${id_usuario}`, {
+    const respuesta = await fetch(`${API}/api/admin/usuarios/${id_usuario}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(datos)
@@ -836,7 +836,7 @@ document.getElementById('btnGenerarInforme').addEventListener('click', async () 
   }
 
   try {
-    const respuesta = await fetch(`${API}/admin/informes?desde=${desde}&hasta=${hasta}`);
+    const respuesta = await fetch(`${API}/api/admin/informes?desde=${desde}&hasta=${hasta}`);
     const datos = await respuesta.json();
 
     if (!respuesta.ok) {

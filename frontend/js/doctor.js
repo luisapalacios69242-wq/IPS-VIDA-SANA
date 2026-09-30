@@ -85,7 +85,7 @@ async function cargarAgenda() {
     contenedor.textContent = 'Cargando...';
 
     try {
-        const respuesta = await fetch(`${API}/doctor/${usuario.id_doctor}/agenda?fecha=${fecha}`);
+        const respuesta = await fetch(`${API}/api/doctor/${usuario.id_doctor}/agenda?fecha=${fecha}`);
         const citas = await respuesta.json();
 
         if (!respuesta.ok) {
@@ -185,7 +185,7 @@ async function cargarDatosDelPaciente(id_cita, id_paciente) {
     const zonaHistoria = document.getElementById(`zona-historia-${id_cita}`);
 
     try {
-        const respuesta = await fetch(`${API}/pacientes/${id_paciente}/ficha`);
+        const respuesta = await fetch(`${API}/api/pacientes/${id_paciente}/ficha`);
         const datos = await respuesta.json();
 
         if (!respuesta.ok) {
@@ -251,7 +251,7 @@ async function atenderConsulta(id_cita) {
             return;
         }
 
-        const respHistoria = await fetch(`${API}/pacientes/${contexto.id_paciente}/historia-clinica`, {
+        const respHistoria = await fetch(`${API}/api/pacientes/${contexto.id_paciente}/historia-clinica`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(historia)
@@ -263,7 +263,7 @@ async function atenderConsulta(id_cita) {
             return;
         }
 
-        const respuesta = await fetch(`${API}/doctor/citas/${id_cita}/atender`, {
+        const respuesta = await fetch(`${API}/api/doctor/citas/${id_cita}/atender`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(datosConsulta)
@@ -286,7 +286,7 @@ async function atenderConsulta(id_cita) {
 
 async function marcarNoAsistio(id_cita) {
     try {
-        const respuesta = await fetch(`${API}/doctor/citas/${id_cita}/no-asistio`, { method: 'PUT' });
+        const respuesta = await fetch(`${API}/api/doctor/citas/${id_cita}/no-asistio`, { method: 'PUT' });
         const datos = await respuesta.json();
 
         if (!respuesta.ok) {
@@ -305,8 +305,8 @@ async function mostrarAccionesPostAtencion(id_cita, id_consulta) {
     document.getElementById(`atender-${id_cita}`).remove();
 
     const [medicamentos, tiposExamen] = await Promise.all([
-        fetch(`${API}/doctor/medicamentos`).then(r => r.json()),
-        fetch(`${API}/doctor/tipos-examen`).then(r => r.json())
+        fetch(`${API}/api/doctor/medicamentos`).then(r => r.json()),
+        fetch(`${API}/api/doctor/tipos-examen`).then(r => r.json())
     ]);
 
     medicamentosPorConsulta[id_consulta] = medicamentos;
@@ -450,7 +450,7 @@ async function generarFormula(id_consulta) {
     }
 
     try {
-        const respuesta = await fetch(`${API}/doctor/consultas/${id_consulta}/formula`, {
+        const respuesta = await fetch(`${API}/api/doctor/consultas/${id_consulta}/formula`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ medicamentos })
@@ -481,7 +481,7 @@ async function generarOrden(id_consulta) {
     }));
 
     try {
-        const respuesta = await fetch(`${API}/doctor/consultas/${id_consulta}/orden-examen`, {
+        const respuesta = await fetch(`${API}/api/doctor/consultas/${id_consulta}/orden-examen`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ examenes })
@@ -516,7 +516,7 @@ async function generarIncapacidad(id_consulta) {
     }
 
     try {
-        const respuesta = await fetch(`${API}/doctor/consultas/${id_consulta}/incapacidad`, {
+        const respuesta = await fetch(`${API}/api/doctor/consultas/${id_consulta}/incapacidad`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ fecha_inicio, dias_incapacidad, motivo })
@@ -661,7 +661,7 @@ async function mostrarDetalleDia(texto) {
     const zonaCitas = document.getElementById('citasDelDia');
 
     try {
-        const respuesta = await fetch(`${API}/doctor/${usuario.id_doctor}/agenda?fecha=${texto}`);
+        const respuesta = await fetch(`${API}/api/doctor/${usuario.id_doctor}/agenda?fecha=${texto}`);
         const citas = await respuesta.json();
 
         if (!respuesta.ok) {
@@ -723,7 +723,7 @@ async function cargarMiHorario() {
     semana.textContent = 'Cargando...';
 
     try {
-        const respuesta = await fetch(`${API}/admin/doctores/${usuario.id_doctor}/horarios?todos=1`);
+        const respuesta = await fetch(`${API}/api/admin/doctores/${usuario.id_doctor}/horarios?todos=1`);
         const datos = await respuesta.json();
 
         if (!respuesta.ok) {

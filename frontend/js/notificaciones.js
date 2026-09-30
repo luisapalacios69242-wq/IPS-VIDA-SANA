@@ -47,7 +47,7 @@ const Notificaciones = (() => {
 
         async function actualizarContador() {
             try {
-                const respuesta = await fetch(`${API}/notificaciones/${usuarioId}/no-leidas`);
+                const respuesta = await fetch(`${API}/api/notificaciones/${usuarioId}/no-leidas`);
                 const datos = await respuesta.json();
 
                 if (datos.total > 0) {
@@ -65,7 +65,7 @@ const Notificaciones = (() => {
             lista.innerHTML = 'Cargando...';
 
             try {
-                const respuesta = await fetch(`${API}/notificaciones/${usuarioId}`);
+                const respuesta = await fetch(`${API}/api/notificaciones/${usuarioId}`);
                 const notificaciones = await respuesta.json();
 
                 if (!respuesta.ok) {
@@ -92,7 +92,7 @@ const Notificaciones = (() => {
                     item.addEventListener('click', async () => {
                         item.classList.remove('no-leida');
                         try {
-                            await fetch(`${API}/notificaciones/${item.dataset.id}/leida`, { method: 'PUT' });
+                            await fetch(`${API}/api/notificaciones/${item.dataset.id}/leida`, { method: 'PUT' });
                             actualizarContador();
                         } catch (error) {
                             console.error(error);
@@ -126,7 +126,7 @@ const Notificaciones = (() => {
         btnLeerTodas.addEventListener('click', async (e) => {
             e.stopPropagation();
             try {
-                await fetch(`${API}/notificaciones/usuario/${usuarioId}/leer-todas`, { method: 'PUT' });
+                await fetch(`${API}/api/notificaciones/usuario/${usuarioId}/leer-todas`, { method: 'PUT' });
                 cargarLista();
                 actualizarContador();
             } catch (error) {

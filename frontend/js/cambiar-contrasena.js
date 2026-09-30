@@ -42,7 +42,7 @@ formCambiar.addEventListener('submit', async (e) => {
   }
 
   try {
-    const respuesta = await fetch(`${API}/auth/cambiar-contrasena`, {
+    const respuesta = await fetch(`${API}/api/auth/cambiar-contrasena`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

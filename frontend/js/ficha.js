@@ -137,7 +137,7 @@ function validarFicha(datos) {
 }
 
 async function guardarFicha(id_paciente, datos) {
-    const respuesta = await fetch(`${API}/pacientes/${id_paciente}/ficha`, {
+    const respuesta = await fetch(`${API}/api/pacientes/${id_paciente}/ficha`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datos)

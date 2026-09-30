@@ -122,7 +122,7 @@ const Agendador = (() => {
 
         async function cargarEspecialidades() {
             try {
-                const respuesta = await fetch(`${API}/citas/especialidades`);
+                const respuesta = await fetch(`${API}/api/citas/especialidades`);
                 const lista = await respuesta.json();
                 el('especialidad').innerHTML = '<option value="">Selecciona una especialidad</option>' +
                     lista.map(e => `<option value="${e.id_especialidad}">${escapar(e.nombre)}</option>`).join('');
@@ -155,7 +155,7 @@ const Agendador = (() => {
             el('dias').innerHTML = '<p style="grid-column:1/-1; font-size:0.85rem;">Buscando horarios...</p>';
 
             try {
-                const respuesta = await fetch(`${API}/citas/disponibilidad/${estado.doctorId}?desde=${desde}&hasta=${hasta}${excluir}`);
+                const respuesta = await fetch(`${API}/api/citas/disponibilidad/${estado.doctorId}?desde=${desde}&hasta=${hasta}${excluir}`);
                 const datos = await respuesta.json();
 
                 if (turno !== estado.solicitud) return;
@@ -304,12 +304,12 @@ const Agendador = (() => {
                 const cabeceras = { 'Content-Type': 'application/json' };
 
                 const respuesta = modoReprogramar
-                    ? await fetch(`${API}/citas/${reprogramar.id_cita}/reprogramar`, {
+                    ? await fetch(`${API}/api/citas/${reprogramar.id_cita}/reprogramar`, {
                         method: 'PUT',
                         headers: cabeceras,
                         body: JSON.stringify({ nueva_fecha: fecha, nueva_hora: `${hora}:00`, secretaria_id: secretariaId })
                     })
-                    : await fetch(`${API}/citas`, {
+                    : await fetch(`${API}/api/citas`, {
                         method: 'POST',
                         headers: cabeceras,
                         body: JSON.stringify({
@@ -362,7 +362,7 @@ const Agendador = (() => {
                 }
 
                 try {
-                    const respuesta = await fetch(`${API}/citas/doctores/${e.target.value}`);
+                    const respuesta = await fetch(`${API}/api/citas/doctores/${e.target.value}`);
                     const doctores = await respuesta.json();
 
                     selectDoctor.innerHTML = doctores.length
@@ -409,7 +409,7 @@ const Agendador = (() => {
             contenedor.textContent = 'Cargando...';
 
             try {
-                const respuesta = await fetch(`${API}/citas/paciente/${id}`);
+                const respuesta = await fetch(`${API}/api/citas/paciente/${id}`);
                 const citas = await respuesta.json();
 
                 if (!respuesta.ok) {
@@ -469,7 +469,7 @@ const Agendador = (() => {
                 if (!confirm(`¿Cancelar la cita del ${fechaLarga(cita.fecha)} a las ${cita.hora.slice(0, 5)}?`)) return;
 
                 try {
-                    const respuesta = await fetch(`${API}/citas/${cita.id_cita}/cancelar`, {
+                    const respuesta = await fetch(`${API}/api/citas/${cita.id_cita}/cancelar`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ secretaria_id: secretariaId })

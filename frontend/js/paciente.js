@@ -30,7 +30,7 @@ const formatearEstado = (estado) => {
 const cargarProximaCita = async () => {
   const contenedor = document.getElementById('proximaCita');
   try {
-    const respuesta = await fetch(`${API}/pacientes/${usuario.id_paciente}/citas`);
+    const respuesta = await fetch(`${API}/api/pacientes/${usuario.id_paciente}/citas`);
     const citas = await respuesta.json();
     const ahora = new Date();
 
@@ -77,7 +77,7 @@ const cargarHistoriaClinica = async () => {
   contenedor.textContent = 'Cargando...';
 
   try {
-    const respuesta = await fetch(`${API}/pacientes/${usuario.id_paciente}/historia-clinica/resumen`);
+    const respuesta = await fetch(`${API}/api/pacientes/${usuario.id_paciente}/historia-clinica/resumen`);
     const datos = await respuesta.json();
 
     if (!respuesta.ok) {
@@ -119,7 +119,7 @@ const cargarHistoriaCompleta = async () => {
   contenedor.textContent = 'Cargando historial completo...';
 
   try {
-    const respuesta = await fetch(`${API}/pacientes/${usuario.id_paciente}/historia-clinica`);
+    const respuesta = await fetch(`${API}/api/pacientes/${usuario.id_paciente}/historia-clinica`);
     const datos = await respuesta.json();
 
     if (!respuesta.ok) {
@@ -157,7 +157,7 @@ const cargarDocumentos = async () => {
   contenedor.textContent = 'Cargando...';
 
   try {
-    const respuesta = await fetch(`${API}/pacientes/${usuario.id_paciente}/documentos`);
+    const respuesta = await fetch(`${API}/api/pacientes/${usuario.id_paciente}/documentos`);
     const datos = await respuesta.json();
 
     const atencionesHtml = datos.atenciones.length
