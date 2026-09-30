@@ -126,13 +126,16 @@ const solicitarRecuperacion = async (req, res) => {
 
     const enlace = `${process.env.FRONTEND_URL}/restablecer.html?token=${token}`;
 
-    const transportador = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
+const transportador = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false, // usa STARTTLS en vez de TLS directo (el puerto 465 a veces está bloqueado en el hosting)
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  },
+  connectionTimeout: 10000 // si no puede conectar en 10s, falla rápido en vez de colgar la petición
+});
 
     await transportador.sendMail({
       from: `"Consultorio Vida Sana" <${process.env.EMAIL_USER}>`,
