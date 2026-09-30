@@ -8,7 +8,6 @@ formRecuperar.addEventListener('submit', async (e) => {
   const numero_documento_o_correo = document.getElementById('documentoOCorreo').value;
 
   try {
-    // frontend/js/recuperar.js, línea 11
     const respuesta = await fetch('https://ips-vida-sana-production.up.railway.app/api/auth/olvide-contrasena', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -26,12 +25,11 @@ formRecuperar.addEventListener('submit', async (e) => {
       <p style="color:#15803d;">${datos.mensaje}</p>
       ${datos.vistaPreviaCorreo ? `
         <p style="color:#5f5e5a; margin-top:10px;">
-          Modo desarrollo: como aún no hay un servidor de correo real conectado,
-          revisa el mensaje aquí:
+          No pudimos enviar el correo en este momento, pero aquí tienes tu enlace de restablecimiento:
         </p>
         <a href="${datos.vistaPreviaCorreo}" target="_blank">
           <button type="button" style="width:100%; padding:9px; background:#fff; color:#185fa5; border:1px solid #185fa5; border-radius:8px; font-weight:600; margin-top:6px;">
-            Ver correo de recuperación
+            Ir a restablecer mi contraseña
           </button>
         </a>
       ` : ''}

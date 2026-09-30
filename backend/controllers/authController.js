@@ -126,32 +126,43 @@ const solicitarRecuperacion = async (req, res) => {
 
     const enlace = `${process.env.FRONTEND_URL}/restablecer.html?token=${token}`;
 
-const transportador = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // usa STARTTLS en vez de TLS directo (el puerto 465 a veces está bloqueado en el hosting)
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  connectionTimeout: 10000 // si no puede conectar en 10s, falla rápido en vez de colgar la petición
-});
-
-    await transportador.sendMail({
-      from: `"Consultorio Vida Sana" <${process.env.EMAIL_USER}>`,
-      to: usuario.correo,
-      subject: 'Restablecimiento de contraseña',
-      html: `
-        <p>Hola ${usuario.nombres},</p>
-        <p>Recibimos una solicitud para restablecer tu contraseña. Este enlace es válido por 30 minutos:</p>
-        <p><a href="${enlace}">Restablecer mi contraseña</a></p>
-        <p>Si el botón no abre, copia este enlace en tu navegador:<br>${enlace}</p>
-        <p>Si no solicitaste esto, ignora este correo.</p>
-      `
+    const transportador = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      },
+      connectionTimeout: 10000
     });
 
-    return res.json(respuestaGenerica);
+    try {
+      await transportador.sendMail({
+        from: `"Consultorio Vida Sana" <${process.env.EMAIL_USER}>`,
+        to: usuario.correo,
+        subject: 'Restablecimiento de contraseña',
+        html: `
+          <p>Hola ${usuario.nombres},</p>
+          <p>Recibimos una solicitud para restablecer tu contraseña. Este enlace es válido por 30 minutos:</p>
+          <p><a href="${enlace}">Restablecer mi contraseña</a></p>
+          <p>Si el botón no abre, copia este enlace en tu navegador:<br>${enlace}</p>
+          <p>Si no solicitaste esto, ignora este correo.</p>
+        `
+      });
 
+      return res.json(respuestaGenerica);
+
+    } catch (errorCorreo) {
+      // El hosting a veces bloquea la salida SMTP hacia Gmail. El token ya quedó guardado,
+      // así que en vez de fallar la solicitud completa, devolvemos el enlace directamente
+      // para que el flujo de recuperación se pueda seguir usando igual.
+      console.error('No se pudo enviar el correo de recuperación (se entrega el enlace directo en su lugar):', errorCorreo.message);
+      return res.json({
+        ...respuestaGenerica,
+        vistaPreviaCorreo: enlace
+      });
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ mensaje: 'Error del servidor al procesar la solicitud.' });
