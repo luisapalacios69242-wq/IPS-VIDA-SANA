@@ -164,22 +164,38 @@ input {
 
 .login-flex {
   display: flex;
-  align-items: center;
-  gap: 60px;
-  max-width: 1100px;
+  align-items: stretch;
+  max-width: 900px;
   width: 100%;
-  padding: 0 24px;
+  margin: 24px;
+  border: 1px solid #dde5ee;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(18, 63, 107, 0.12);
 }
 
 .login-marca {
   flex: 1;
   display: flex;
+  align-items: center;
   justify-content: center;
+  background: #eaf2fb;
+  padding: 48px 32px;
 }
 
 .login-marca img {
   width: 100%;
-  max-width: 380px;
+  max-width: 320px;
+}
+
+.login-flex .contenedor-login {
+  flex: 1;
+  box-shadow: none;
+  border-radius: 0;
+  border-left: 1px solid #dde5ee;
+  max-width: none;
+  width: 100%;
+  margin: 0;
 }
 
 .icono-consultorio {
@@ -202,7 +218,12 @@ input {
 @media (max-width: 800px) {
   .login-flex {
     flex-direction: column;
-    gap: 24px;
+    margin: 16px;
+  }
+
+  .login-flex .contenedor-login {
+    border-left: none;
+    border-top: 1px solid #dde5ee;
   }
 
   .login-marca img {
