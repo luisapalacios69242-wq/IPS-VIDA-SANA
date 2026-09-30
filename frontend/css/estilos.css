@@ -230,3 +230,94 @@ input {
     max-width: 220px;
   }
 }
+
+/* ===== Encabezado de registro: logo + titulo en una tarjeta ===== */
+.registro-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #ffffff;
+  border: 1px solid #dde5ee;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(18, 63, 107, 0.08);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.registro-header-logo {
+  background: #eaf2fb;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.registro-header-logo img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.registro-header-texto {
+  padding: 16px 20px 16px 0;
+  text-align: left;
+}
+
+.registro-titulo {
+  font-weight: 700;
+  color: #185fa5;
+  font-size: 1.2rem;
+  margin: 0 0 2px;
+}
+
+@media (max-width: 560px) {
+  .registro-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .registro-header-texto {
+    padding: 0 20px 20px;
+    text-align: center;
+  }
+}
+
+/* ===== Colores del formulario de registro ===== */
+.tarjeta-formulario label {
+  color: #374151;
+  font-weight: 600;
+}
+
+.tarjeta-formulario input,
+.tarjeta-formulario select {
+  border: 1px solid #d3d1c7;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 0.9rem;
+  color: #1f2937;
+  background: #ffffff;
+  width: 100%;
+}
+
+.tarjeta-formulario input:focus,
+.tarjeta-formulario select:focus {
+  outline: none;
+  border-color: #185fa5;
+  box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.12);
+}
+
+.tarjeta-formulario button#btnRegistrar {
+  width: 100%;
+  padding: 10px;
+  background: #185fa5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.tarjeta-formulario button#btnRegistrar:hover {
+  background: #123f6b;
+}
