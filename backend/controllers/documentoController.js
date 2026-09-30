@@ -251,27 +251,36 @@ const generarPdfOrdenExamen = async (req, res) => {
 
     const o = ordenRows[0];
 
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=orden-examen-${id_orden}.pdf`);
     doc.pipe(res);
 
     encabezado(doc);
-    doc.fontSize(15).fillColor('#000').text('Orden de Examen');
-    doc.moveDown(0.5);
-    doc.fontSize(11);
-    doc.text(`Paciente: ${o.paciente_nombres} ${o.paciente_apellidos}`);
-    doc.text(`Documento: ${o.numero_documento}`);
-    doc.text(`Fecha: ${o.fecha}`);
-    doc.text(`Doctor: ${o.doctor_nombres} ${o.doctor_apellidos}`);
-    doc.moveDown();
-    doc.fontSize(12).text('Exámenes solicitados', { underline: true });
-    doc.moveDown(0.3);
+    doc.font('Helvetica-Bold').fontSize(15).fillColor('#000').text('Orden de Examen');
+    doc.font('Helvetica');
+    doc.moveDown(0.6);
 
-    detalles.forEach(d => {
-      doc.fontSize(11).fillColor('#185fa5').text(d.tipo_examen);
-      if (d.observaciones) doc.fillColor('#000').text(`Observaciones: ${d.observaciones}`);
-      doc.moveDown(0.4);
+    dibujarTabla(doc, {
+      titulo: 'Datos de la orden',
+      columnas: [{ titulo: 'Campo', ancho: 160 }, { titulo: 'Detalle' }],
+      filas: [
+        ['Paciente', `${o.paciente_nombres} ${o.paciente_apellidos}`],
+        ['Documento', o.numero_documento],
+        ['Fecha', o.fecha],
+        ['Doctor(a)', `Dr(a). ${o.doctor_nombres} ${o.doctor_apellidos}`]
+      ]
+    });
+
+    dibujarTabla(doc, {
+      titulo: 'Exámenes solicitados',
+      columnas: [
+        { titulo: 'Examen', ancho: 200 },
+        { titulo: 'Observaciones' }
+      ],
+      filas: detalles.length
+        ? detalles.map(d => [d.tipo_examen, d.observaciones || '—'])
+        : [['Sin exámenes registrados.', '—']]
     });
 
     doc.end();
@@ -316,28 +325,45 @@ const generarPdfFormula = async (req, res) => {
 
     const f = formulaRows[0];
 
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=formula-medica-${id_formula}.pdf`);
     doc.pipe(res);
 
     encabezado(doc);
-    doc.fontSize(15).fillColor('#000').text('Fórmula Médica');
-    doc.moveDown(0.5);
-    doc.fontSize(11);
-    doc.text(`Paciente: ${f.paciente_nombres} ${f.paciente_apellidos}`);
-    doc.text(`Documento: ${f.numero_documento}`);
-    doc.text(`Fecha: ${f.fecha}`);
-    doc.text(`Doctor: ${f.doctor_nombres} ${f.doctor_apellidos}`);
-    doc.moveDown();
-    doc.fontSize(12).text('Medicamentos formulados', { underline: true });
-    doc.moveDown(0.3);
+    doc.font('Helvetica-Bold').fontSize(15).fillColor('#000').text('Fórmula Médica');
+    doc.font('Helvetica');
+    doc.moveDown(0.6);
 
-    detalles.forEach(d => {
-      doc.fontSize(11).fillColor('#185fa5').text(d.medicamento);
-      doc.fillColor('#000').text(`Dosis: ${d.dosis}${d.frecuencia ? ' · ' + d.frecuencia : ''}${d.duracion ? ' · ' + d.duracion : ''}`);
-      if (d.indicaciones) doc.text(`Indicaciones: ${d.indicaciones}`);
-      doc.moveDown(0.5);
+    dibujarTabla(doc, {
+      titulo: 'Datos de la fórmula',
+      columnas: [{ titulo: 'Campo', ancho: 160 }, { titulo: 'Detalle' }],
+      filas: [
+        ['Paciente', `${f.paciente_nombres} ${f.paciente_apellidos}`],
+        ['Documento', f.numero_documento],
+        ['Fecha', f.fecha],
+        ['Doctor(a)', `Dr(a). ${f.doctor_nombres} ${f.doctor_apellidos}`]
+      ]
+    });
+
+    dibujarTabla(doc, {
+      titulo: 'Medicamentos formulados',
+      columnas: [
+        { titulo: 'Medicamento', ancho: 120 },
+        { titulo: 'Dosis', ancho: 70 },
+        { titulo: 'Frecuencia', ancho: 80 },
+        { titulo: 'Duración', ancho: 70 },
+        { titulo: 'Indicaciones', ancho: 172 }
+      ],
+      filas: detalles.length
+        ? detalles.map(d => [
+            d.medicamento,
+            d.dosis || '—',
+            d.frecuencia || '—',
+            d.duracion || '—',
+            d.indicaciones || '—'
+          ])
+        : [['Sin medicamentos registrados.', '—', '—', '—', '—']]
     });
 
     doc.end();
@@ -349,7 +375,6 @@ const generarPdfFormula = async (req, res) => {
     }
   }
 };
-
 const generarPdfResumenAtencion = async (req, res) => {
   const { id_consulta } = req.params;
 
@@ -385,24 +410,26 @@ const generarPdfResumenAtencion = async (req, res) => {
       [id_consulta]
     );
 
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=resumen-atencion-${id_consulta}.pdf`);
     doc.pipe(res);
 
     encabezado(doc);
-    doc.fontSize(15).fillColor('#000').text('Resumen de Atención');
-    doc.moveDown(0.5);
-    doc.fontSize(11);
-    doc.text(`Paciente: ${co.paciente_nombres} ${co.paciente_apellidos}`);
-    doc.text(`Documento: ${co.numero_documento}`);
-    doc.text(`Fecha: ${co.fecha_consulta}`);
-    doc.text(`Doctor: ${co.doctor_nombres} ${co.doctor_apellidos}`);
-    doc.moveDown();
+    doc.font('Helvetica-Bold').fontSize(15).fillColor('#000').text('Resumen de Atención');
+    doc.font('Helvetica');
+    doc.moveDown(0.6);
 
-    doc.fontSize(13).fillColor('#185fa5').text('Atención general', { underline: true });
-    doc.moveDown(0.3);
-    doc.fontSize(11).fillColor('#000');
+    dibujarTabla(doc, {
+      titulo: 'Datos de la atención',
+      columnas: [{ titulo: 'Campo', ancho: 160 }, { titulo: 'Detalle' }],
+      filas: [
+        ['Paciente', `${co.paciente_nombres} ${co.paciente_apellidos}`],
+        ['Documento', co.numero_documento],
+        ['Fecha', co.fecha_consulta],
+        ['Doctor(a)', `Dr(a). ${co.doctor_nombres} ${co.doctor_apellidos}`]
+      ]
+    });
 
     const peso = co.peso !== null ? Number(co.peso) : null;
     const talla = co.talla !== null ? Number(co.talla) : null;
@@ -414,38 +441,47 @@ const generarPdfResumenAtencion = async (req, res) => {
       lineaImc = `${imc.toFixed(1)} (${categoriaIMC(imc)})`;
     }
 
-    doc.text(`Peso: ${peso ? peso + ' kg' : 'No registrado'}`);
-    doc.text(`Talla: ${talla ? talla + ' cm' : 'No registrada'}`);
-    doc.text(`IMC: ${lineaImc}`);
-    doc.text(`Presión arterial: ${co.presion_arterial || 'No registrada'}`);
-    doc.text(`Temperatura: ${co.temperatura !== null ? co.temperatura + ' °C' : 'No registrada'}`);
-    doc.text(`Frecuencia cardíaca: ${co.frecuencia_cardiaca !== null ? co.frecuencia_cardiaca + ' lpm' : 'No registrada'}`);
-    doc.text(`Frecuencia respiratoria: ${co.frecuencia_respiratoria !== null ? co.frecuencia_respiratoria + ' rpm' : 'No registrada'}`);
-    doc.moveDown(0.4);
+    dibujarTabla(doc, {
+      titulo: 'Signos vitales',
+      columnas: [{ titulo: 'Campo', ancho: 160 }, { titulo: 'Detalle' }],
+      filas: [
+        ['Peso', peso ? `${peso} kg` : 'No registrado'],
+        ['Talla', talla ? `${talla} cm` : 'No registrada'],
+        ['IMC', lineaImc],
+        ['Presión arterial', co.presion_arterial || 'No registrada'],
+        ['Temperatura', co.temperatura !== null ? `${co.temperatura} °C` : 'No registrada'],
+        ['Frecuencia cardíaca', co.frecuencia_cardiaca !== null ? `${co.frecuencia_cardiaca} lpm` : 'No registrada'],
+        ['Frecuencia respiratoria', co.frecuencia_respiratoria !== null ? `${co.frecuencia_respiratoria} rpm` : 'No registrada']
+      ]
+    });
 
     if (co.examen_fisico) {
-      doc.text('Examen físico:');
-      doc.text(co.examen_fisico);
-      doc.moveDown(0.4);
-    }
-
-    doc.text(`Diagnóstico: ${co.diagnostico}`);
-    if (co.observaciones) doc.text(`Observaciones: ${co.observaciones}`);
-    doc.moveDown();
-
-    doc.fontSize(13).fillColor('#185fa5').text('Ayudas diagnósticas', { underline: true });
-    doc.moveDown(0.3);
-    doc.fontSize(11).fillColor('#000');
-
-    if (examenesRows.length === 0) {
-      doc.text('No se ordenaron exámenes en esta consulta.');
-    } else {
-      examenesRows.forEach(e => {
-        doc.fillColor('#185fa5').text(e.tipo_examen);
-        if (e.observaciones) doc.fillColor('#000').text(`Observaciones: ${e.observaciones}`);
-        doc.moveDown(0.3);
+      dibujarTabla(doc, {
+        titulo: 'Examen físico',
+        columnas: [{ titulo: 'Hallazgos' }],
+        filas: [[co.examen_fisico]]
       });
     }
+
+    dibujarTabla(doc, {
+      titulo: 'Diagnóstico',
+      columnas: [{ titulo: 'Campo', ancho: 160 }, { titulo: 'Detalle' }],
+      filas: [
+        ['Diagnóstico', co.diagnostico],
+        ['Observaciones', co.observaciones || '—']
+      ]
+    });
+
+    dibujarTabla(doc, {
+      titulo: 'Ayudas diagnósticas',
+      columnas: [
+        { titulo: 'Examen', ancho: 200 },
+        { titulo: 'Observaciones' }
+      ],
+      filas: examenesRows.length
+        ? examenesRows.map(e => [e.tipo_examen, e.observaciones || '—'])
+        : [['No se ordenaron exámenes en esta consulta.', '—']]
+    });
 
     doc.end();
 
@@ -550,30 +586,37 @@ const generarPdfIncapacidad = async (req, res) => {
 
     const i = rows[0];
 
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=incapacidad-medica-${id_incapacidad}.pdf`);
     doc.pipe(res);
 
     encabezado(doc);
-    doc.fontSize(15).fillColor('#000').text('Incapacidad Médica');
-    doc.moveDown(0.5);
-    doc.fontSize(11);
-    doc.text(`Paciente: ${i.paciente_nombres} ${i.paciente_apellidos}`);
-    doc.text(`Documento: ${i.numero_documento}`);
-    doc.moveDown();
+    doc.font('Helvetica-Bold').fontSize(15).fillColor('#000').text('Incapacidad Médica');
+    doc.font('Helvetica');
+    doc.moveDown(0.6);
 
-    doc.fontSize(12).text('Detalle de la incapacidad', { underline: true });
-    doc.fontSize(11);
-    doc.text(`Fecha de inicio: ${i.fecha_inicio}`);
-    doc.text(`Fecha de finalización: ${i.fecha_fin}`);
-    doc.text(`Días de incapacidad: ${i.dias_incapacidad}`);
-    doc.moveDown(0.4);
-    doc.text('Motivo:');
-    doc.text(i.motivo);
-    doc.moveDown();
+    dibujarTabla(doc, {
+      titulo: 'Datos del paciente',
+      columnas: [{ titulo: 'Campo', ancho: 160 }, { titulo: 'Detalle' }],
+      filas: [
+        ['Paciente', `${i.paciente_nombres} ${i.paciente_apellidos}`],
+        ['Documento', i.numero_documento]
+      ]
+    });
 
-    doc.fontSize(9).fillColor('#5f5e5a')
+    dibujarTabla(doc, {
+      titulo: 'Detalle de la incapacidad',
+      columnas: [{ titulo: 'Campo', ancho: 160 }, { titulo: 'Detalle' }],
+      filas: [
+        ['Fecha de inicio', i.fecha_inicio],
+        ['Fecha de finalización', i.fecha_fin],
+        ['Días de incapacidad', String(i.dias_incapacidad)],
+        ['Motivo', i.motivo]
+      ]
+    });
+
+    doc.fontSize(9).fillColor('#333333')
       .text(`Expedida por: Dr(a). ${i.doctor_nombres} ${i.doctor_apellidos} — T.P. ${i.tarjeta_profesional}`);
 
     doc.end();
