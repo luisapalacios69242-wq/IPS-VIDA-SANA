@@ -1,10 +1,23 @@
 const PDFDocument = require('pdfkit');
 const pool = require('../config/conexion');
 
+const IPS = {
+  nombre: 'Consultorio Vida Sana',
+  eslogan: 'Institución Prestadora de Servicios de Salud (IPS privada)',
+  direccion: 'Cra 78 B # 100 -13, Apartadó, Antioquia',
+  telefono: '302 382 0480',
+  correo: 'ipsvidasanamejoratusalud@gmail.com'
+};
+
 const encabezado = (doc) => {
-  doc.fontSize(16).fillColor('#185fa5').text('Consultorio Vida Sana', { align: 'left' });
-  doc.fontSize(9).fillColor('#5f5e5a').text('Institución Prestadora de Servicios de Salud (IPS privada)');
-  doc.moveDown(1.2);
+  doc.fontSize(18).fillColor('#185fa5').text(IPS.nombre, { align: 'left' });
+  doc.fontSize(9).fillColor('#5f5e5a').text(IPS.eslogan);
+  doc.fontSize(8.5).fillColor('#5f5e5a')
+    .text(`${IPS.direccion}   ·   Tel: ${IPS.telefono}   ·   ${IPS.correo}`);
+  doc.moveDown(0.4);
+  doc.moveTo(50, doc.y).lineTo(doc.page.width - 50, doc.y)
+    .strokeColor('#185fa5').lineWidth(1.2).stroke();
+  doc.moveDown(1);
 };
 
 const categoriaIMC = (imc) => {
@@ -14,6 +27,61 @@ const categoriaIMC = (imc) => {
   if (imc < 35) return 'Obesidad grado I';
   if (imc < 40) return 'Obesidad grado II';
   return 'Obesidad grado III';
+};
+
+// Dibuja una tabla genérica en pdfkit (no trae soporte nativo de tablas).
+// columnas: [{ titulo, ancho }]   filas: [[valor1, valor2, ...], ...]
+const dibujarTabla = (doc, { titulo, columnas, filas, mostrarCabecera = true }) => {
+  const anchoTotal = doc.page.width - 100;
+  const startX = doc.page.margins.left;
+  const anchos = columnas.map(c => c.ancho || anchoTotal / columnas.length);
+  const padY = 6;
+  const fsCabecera = 9.5;
+  const fsFila = 9;
+
+  if (titulo) {
+    doc.fontSize(12).fillColor('#185fa5').text(titulo);
+    doc.moveDown(0.3);
+  }
+
+  const dibujarCabecera = () => {
+    const y = doc.y;
+    doc.rect(startX, y, anchoTotal, 22).fill('#185fa5');
+    let x = startX;
+    doc.fillColor('#ffffff').fontSize(fsCabecera);
+    columnas.forEach((col, i) => {
+      doc.text(col.titulo, x + 6, y + 6, { width: anchos[i] - 12 });
+      x += anchos[i];
+    });
+    doc.y = y + 22;
+  };
+
+  if (mostrarCabecera) dibujarCabecera();
+
+  filas.forEach((fila, idx) => {
+    const alturas = columnas.map((col, i) =>
+      doc.heightOfString(String(fila[i] ?? ''), { width: anchos[i] - 12, fontSize: fsFila })
+    );
+    const alturaFila = Math.max(...alturas) + padY * 2;
+
+    if (doc.y + alturaFila > doc.page.height - doc.page.margins.bottom) {
+      doc.addPage();
+      if (mostrarCabecera) dibujarCabecera();
+    }
+
+    const y = doc.y;
+    if (idx % 2 === 0) doc.rect(startX, y, anchoTotal, alturaFila).fill('#f1f6fb');
+
+    let x = startX;
+    doc.fillColor('#1f2937').fontSize(fsFila);
+    columnas.forEach((col, i) => {
+      doc.text(String(fila[i] ?? ''), x + 6, y + padY, { width: anchos[i] - 12 });
+      x += anchos[i];
+    });
+    doc.y = y + alturaFila;
+  });
+
+  doc.moveDown(1);
 };
 
 const generarPdfHistoriaClinica = async (req, res) => {
@@ -55,38 +123,54 @@ const generarPdfHistoriaClinica = async (req, res) => {
     const paciente = pacienteRows[0];
     const historia = historiaRows[0];
 
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=historia-clinica-${paciente.numero_documento}.pdf`);
     doc.pipe(res);
 
     encabezado(doc);
     doc.fontSize(15).fillColor('#000').text('Historia Clínica');
-    doc.moveDown(0.5);
-    doc.fontSize(11).text(`Paciente: ${paciente.nombres} ${paciente.apellidos}`);
-    doc.text(`Documento: ${paciente.numero_documento}`);
-    doc.moveDown();
+    doc.moveDown(0.6);
 
-    doc.fontSize(12).text('Datos base', { underline: true });
-    doc.fontSize(11);
-    doc.text(`Grupo sanguíneo: ${historia.grupo_sanguineo || 'No registrado'}`);
-    doc.text(`Alergias: ${historia.alergias || 'No registradas'}`);
-    doc.text(`Antecedentes personales: ${historia.antecedentes_personales || 'No registrados'}`);
-    doc.text(`Antecedentes familiares: ${historia.antecedentes_familiares || 'No registrados'}`);
-    doc.moveDown();
+    dibujarTabla(doc, {
+      titulo: 'Datos del paciente',
+      columnas: [{ titulo: 'Campo', ancho: 160 }, { titulo: 'Detalle' }],
+      filas: [
+        ['Paciente', `${paciente.nombres} ${paciente.apellidos}`],
+        ['Documento', paciente.numero_documento]
+      ]
+    });
 
-    doc.fontSize(12).text('Consultas', { underline: true });
+    dibujarTabla(doc, {
+      titulo: 'Datos base',
+      columnas: [{ titulo: 'Campo', ancho: 160 }, { titulo: 'Detalle' }],
+      filas: [
+        ['Grupo sanguíneo', historia.grupo_sanguineo || 'No registrado'],
+        ['Alergias', historia.alergias || 'No registradas'],
+        ['Antecedentes personales', historia.antecedentes_personales || 'No registrados'],
+        ['Antecedentes familiares', historia.antecedentes_familiares || 'No registrados']
+      ]
+    });
+
+    doc.fontSize(12).fillColor('#185fa5').text('Consultas', { continued: false });
     doc.moveDown(0.3);
 
     if (consultas.length === 0) {
-      doc.fontSize(11).text('Sin consultas registradas.');
+      doc.fontSize(11).fillColor('#000').text('Sin consultas registradas.');
     } else {
-      consultas.forEach(c => {
-        doc.fontSize(11).fillColor('#185fa5').text(`${c.fecha_consulta}`);
-        doc.fillColor('#000').text(`Dr(a). ${c.doctor_nombres} ${c.doctor_apellidos}`);
-        doc.text(`Diagnóstico: ${c.diagnostico}`);
-        if (c.observaciones) doc.text(`Observaciones: ${c.observaciones}`);
-        doc.moveDown(0.6);
+      dibujarTabla(doc, {
+        columnas: [
+          { titulo: 'Fecha', ancho: 90 },
+          { titulo: 'Doctor(a)', ancho: 130 },
+          { titulo: 'Diagnóstico', ancho: 140 },
+          { titulo: 'Observaciones' }
+        ],
+        filas: consultas.map(c => [
+          new Date(c.fecha_consulta).toLocaleString('es-CO'),
+          `Dr(a). ${c.doctor_nombres} ${c.doctor_apellidos}`,
+          c.diagnostico,
+          c.observaciones || '—'
+        ])
       });
     }
 
