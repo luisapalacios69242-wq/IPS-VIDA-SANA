@@ -309,7 +309,7 @@ document.getElementById('btnRegistrarPaciente').addEventListener('click', async 
     boton.disabled = true;
 
     try {
-        const respuesta = await fetch(`${API}/pacientes/registro`, {
+        const respuesta = await fetch(`${API}/api/paciente/registro`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(datos)

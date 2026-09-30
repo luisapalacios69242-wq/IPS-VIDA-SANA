@@ -50,7 +50,7 @@ document.getElementById('btnRegistrar').addEventListener('click', async () => {
     boton.disabled = true;
 
     try {
-        const respuesta = await fetch(`${API}/pacientes/registro`, {
+        const respuesta = await fetch(`${API}/api/paciente/registro`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(datos)
@@ -66,7 +66,7 @@ document.getElementById('btnRegistrar').addEventListener('click', async () => {
 
         // Ya está registrado. Para que no tenga que volver a escribir su cédula,
         // lo dejamos directo en la pantalla de crear su contraseña.
-        const respLogin = await fetch(`${API}/auth/login`, {
+        const respLogin = await fetch(`${API}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
