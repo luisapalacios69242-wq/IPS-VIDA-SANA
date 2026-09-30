@@ -13,6 +13,15 @@ document.getElementById('btnCerrarSesion').addEventListener('click', () => {
     window.location.href = 'index.html';
 });
 
+// Si vuelves con el botón "Atrás" del navegador después de cerrar sesión, el navegador
+// puede mostrar esta página desde su caché sin volver a ejecutar el chequeo de arriba.
+// Forzamos una recarga para que se vuelva a validar la sesión.
+window.addEventListener('pageshow', (evento) => {
+  if (evento.persisted) {
+    window.location.reload();
+  }
+});
+
 const formatearEstado = (estado) => {
     const mapa = {
         programada: 'Programada', confirmada: 'Confirmada', en_espera: 'En espera',
