@@ -1,0 +1,155 @@
+* {
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+.pagina-login {
+  background-color: #f1efe8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+}
+
+.contenedor-login {
+  background: #ffffff;
+  padding: 2rem 1.5rem;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+  width: 340px;
+  text-align: center;
+}
+
+.icono-consultorio {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #e6f1fb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  font-size: 22px;
+}
+
+h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #185fa5;
+  margin: 0 0 2px;
+}
+
+.subtitulo {
+  font-size: 0.78rem;
+  color: #5f5e5a;
+  margin: 0 0 22px;
+}
+
+label {
+  font-size: 0.75rem;
+  color: #5f5e5a;
+  display: block;
+  text-align: left;
+  margin-bottom: 4px;
+}
+
+input {
+  width: 100%;
+  padding: 9px 10px;
+  margin-bottom: 12px;
+  border: 1px solid #d3d1c7;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.enlace-olvido {
+  font-size: 0.72rem;
+  color: #185fa5;
+  display: block;
+  text-align: right;
+  margin: -4px 0 16px;
+  text-decoration: none;
+}
+
+.btn-primario {
+  width: 100%;
+  padding: 10px;
+  background: #185fa5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.divisor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 16px;
+}
+
+.divisor hr {
+  flex: 1;
+  border: none;
+  border-top: 1px solid #e5e3da;
+}
+
+.divisor span {
+  font-size: 0.72rem;
+  color: #a3a196;
+}
+
+.btn-secundario {
+  display: block;
+  width: 100%;
+  padding: 9px;
+  background: #fff;
+  color: #1f2937;
+  border: 1px solid #d3d1c7;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.nota {
+  font-size: 0.68rem;
+  color: #a3a196;
+  margin: 18px 0 0;
+}
+
+.error {
+  color: #b91c1c;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.campo-contrasena {
+  position: relative;
+}
+
+.campo-contrasena input {
+  padding-right: 36px;
+}
+
+.boton-ojo {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  opacity: 0.6;
+}
+
+.boton-ojo:hover {
+  opacity: 1;
+}

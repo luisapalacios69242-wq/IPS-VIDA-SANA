@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Consultorio Vida Sana - Recuperar contraseña</title>
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body class="pagina-login">
+  <div class="contenedor-login">
+    <div class="icono-consultorio">🩺</div>
+    <p style="font-weight:700; color:#185fa5; font-size:1.15rem; margin:0 0 2px;">Recuperar contraseña</p>
+    <p class="subtitulo">Ingresa tu documento o correo registrado</p>
+
+    <form id="formRecuperar">
+      <label for="documentoOCorreo">Documento o correo</label>
+      <input type="text" id="documentoOCorreo" placeholder="1020345678 o tu@correo.com" required>
+
+      <button type="submit" class="btn-primario">Enviar enlace de recuperación</button>
+    </form>
+
+    <div id="resultado" style="margin-top:16px; font-size:0.85rem;"></div>
+
+    <p class="nota"><a href="index.html" style="color:#185fa5;">Volver a iniciar sesión</a></p>
+  </div>
+
+  <script src="js/recuperar.js"></script>
+</body>
+</html>

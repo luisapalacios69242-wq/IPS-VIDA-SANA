@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Consultorio Vida Sana - Crea tu contraseña</title>
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body class="pagina-login">
+  <div class="contenedor-login">
+    <div class="icono-consultorio">🩺</div>
+    <p style="font-weight:700; color:#185fa5; font-size:1.15rem; margin:0 0 2px;">Crea tu contraseña</p>
+    <p class="subtitulo">Es tu primer ingreso. Elige una contraseña personal para continuar.</p>
+
+    <form id="formCambiar">
+      <label for="contrasenaNueva">Contraseña nueva</label>
+      <div class="campo-contrasena">
+        <input type="password" id="contrasenaNueva" placeholder="Mínimo 6 caracteres" required>
+        <button type="button" id="btnVerContrasena" class="boton-ojo">👁️</button>
+      </div>
+
+      <label for="contrasenaConfirmar">Confirmar contraseña</label>
+      <input type="password" id="contrasenaConfirmar" placeholder="Repite la contraseña" required>
+
+      <button type="submit" class="btn-primario">Guardar y entrar</button>
+      <p id="mensajeError" class="error"></p>
+    </form>
+  </div>
+
+  <script src="js/cambiar-contrasena.js"></script>
+</body>
+</html>

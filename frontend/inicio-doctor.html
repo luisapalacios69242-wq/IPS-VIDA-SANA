@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Consultorio Vida Sana - Doctor</title>
+    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/panel.css">
+</head>
+
+<body class="panel-body">
+
+    <div class="panel-topbar">
+        <div class="panel-marca">🩺 Consultorio Vida Sana</div>
+        <div class="panel-usuario">
+            <div id="zonaCampana"></div>
+            <span id="nombreUsuario"></span>
+            <button id="btnCerrarSesion">Cerrar sesión</button>
+        </div>
+    </div>
+
+    <div class="panel-layout">
+        <nav class="panel-sidebar">
+            <button class="nav-item activo" data-seccion="agenda">Agenda del Día</button>
+            <button class="nav-item" data-seccion="horario">Mi Horario</button>
+        </nav>
+
+        <main class="panel-contenido">
+            <section id="seccion-agenda" class="seccion">
+                <h2>Agenda del día</h2>
+                <label>Fecha</label>
+                <input type="date" id="inputFechaAgenda" style="margin-bottom:14px;">
+                <div id="listaAgenda"></div>
+            </section>
+
+            <section id="seccion-horario" class="seccion oculto">
+                <h2>Mi horario</h2>
+
+                <h3>Horario de la semana</h3>
+                <div id="semanaHorario" class="semana-horario"></div>
+
+                <h3>Calendario</h3>
+                <p class="ayuda-calendario">Elige un día para ver tu horario, tus bloqueos y las citas de esa fecha.
+                    Puedes ir a meses anteriores con las flechas.</p>
+
+                <div class="calendario">
+                    <div class="cal-cabecera">
+                        <button type="button" id="btnMesAnterior">‹</button>
+                        <strong id="tituloMes"></strong>
+                        <button type="button" id="btnMesSiguiente">›</button>
+                        <button type="button" id="btnHoy">Hoy</button>
+                    </div>
+                    <div class="cal-semana">
+                        <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+                    </div>
+                    <div id="calendarioDias" class="cal-dias"></div>
+                    <div class="cal-leyenda">
+                        <span><i style="background:#e6f1fb;"></i>Día de atención</span>
+                        <span><i style="background:#fde2e2;"></i>Bloqueo</span>
+                        <span><i style="background:#fff; border:1px solid #185fa5;"></i>Hoy</span>
+                    </div>
+                </div>
+
+                <div id="detalleDia" class="tarjeta" style="max-width:520px;"></div>
+            </section>
+        </main>
+    </div>
+    <script src="js/ficha.js"></script>
+    <script src="js/notificaciones.js"></script>
+    <script src="js/doctor.js"></script>
+</body>
+
+</html>

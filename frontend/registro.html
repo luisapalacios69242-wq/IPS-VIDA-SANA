@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Consultorio Vida Sana - Registro de paciente</title>
+  <link rel="stylesheet" href="css/estilos.css">
+  <link rel="stylesheet" href="css/panel.css">
+</head>
+<body class="pagina-login" style="align-items:flex-start; padding-top:40px; padding-bottom:40px;">
+  <div style="max-width:700px; width:100%;">
+
+    <div class="contenedor-login" style="margin-bottom:16px;">
+      <div class="icono-consultorio">🩺</div>
+      <p style="font-weight:700; color:#185fa5; font-size:1.15rem; margin:0 0 2px;">Regístrate como paciente</p>
+      <p class="subtitulo">Completa tus datos para poder agendar tus citas</p>
+    </div>
+
+    <div class="tarjeta tarjeta-formulario">
+      <div class="grid-2">
+        <div class="campo">
+          <label>Tipo de documento *</label>
+          <select id="reg-tipo-doc">
+            <option value="CC">CC</option>
+            <option value="TI">TI</option>
+            <option value="CE">CE</option>
+            <option value="PA">PA</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label>Número de documento *</label>
+          <input type="text" id="reg-documento">
+        </div>
+
+        <div class="campo">
+          <label>Nombres *</label>
+          <input type="text" id="reg-nombres">
+        </div>
+        <div class="campo">
+          <label>Apellidos *</label>
+          <input type="text" id="reg-apellidos">
+        </div>
+
+        <div class="campo">
+          <label>Fecha de nacimiento *</label>
+          <input type="date" id="reg-fecha">
+        </div>
+        <div class="campo">
+          <label>Género *</label>
+          <select id="reg-genero">
+            <option value="">Selecciona...</option>
+            <option value="Masculino">Masculino</option>
+            <option value="Femenino">Femenino</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label>Estado civil</label>
+          <select id="reg-estado-civil">
+            <option value="">Selecciona...</option>
+            <option value="Soltero(a)">Soltero(a)</option>
+            <option value="Casado(a)">Casado(a)</option>
+            <option value="Unión libre">Unión libre</option>
+            <option value="Divorciado(a)">Divorciado(a)</option>
+            <option value="Viudo(a)">Viudo(a)</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label>Teléfono *</label>
+          <input type="text" id="reg-telefono">
+        </div>
+
+        <div class="campo">
+          <label>Ciudad *</label>
+          <input type="text" id="reg-ciudad">
+        </div>
+        <div class="campo">
+          <label>Correo electrónico *</label>
+          <input type="email" id="reg-correo">
+        </div>
+
+        <div class="campo campo-full">
+          <label>Dirección *</label>
+          <input type="text" id="reg-direccion">
+        </div>
+
+        <div class="campo">
+          <label>Contacto de emergencia (nombre) *</label>
+          <input type="text" id="reg-contacto-nombre">
+        </div>
+        <div class="campo">
+          <label>Contacto de emergencia (teléfono) *</label>
+          <input type="text" id="reg-contacto-telefono">
+        </div>
+
+        <div class="campo campo-full">
+          <label>EPS</label>
+          <input type="text" id="reg-eps" placeholder="Ej. Sura. Si es particular, escribe: Particular">
+        </div>
+      </div>
+
+      <p style="font-size:0.8rem; color:#5f5e5a;">
+        Al registrarte, tu contraseña inicial será tu número de documento. Te pediremos crear una
+        contraseña nueva la primera vez que inicies sesión.
+      </p>
+
+      <button id="btnRegistrar" style="margin-top:6px;">Registrarme</button>
+      <p id="mensajeRegistro" class="error"></p>
+    </div>
+
+    <p style="text-align:center; margin-top:16px;">
+      <a href="index.html" style="color:#185fa5; font-size:0.85rem;">Ya tengo cuenta, iniciar sesión</a>
+    </p>
+  </div>
+
+  <script src="js/ficha.js"></script>
+  <script src="js/registro.js"></script>
+</body>
+</html>
