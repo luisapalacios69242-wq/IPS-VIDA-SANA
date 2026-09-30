@@ -734,3 +734,62 @@ input[readonly], select[disabled] {
   border-color: #185fa5;
   box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.12);
 }
+
+/* ===== Layout de dos columnas: Horarios y bloqueos ===== */
+#seccion-horarios {
+  max-width: 1100px;
+}
+
+.horarios-layout {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.horarios-col-izq {
+  flex: 0 0 420px;
+  max-width: 420px;
+}
+
+.horarios-col-der {
+  flex: 1;
+  min-width: 0;
+}
+
+.horarios-col-izq > label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.horarios-col-izq > select {
+  display: block;
+  width: 100%;
+  margin: 0 0 20px;
+  padding: 11px 14px;
+  border: 1px solid #d3d1c7;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: #1f2937;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.horarios-col-izq > select:focus {
+  outline: none;
+  border-color: #185fa5;
+  box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.12);
+}
+
+@media (max-width: 900px) {
+  .horarios-layout {
+    flex-direction: column;
+  }
+
+  .horarios-col-izq {
+    flex: 1;
+    max-width: none;
+    width: 100%;
+  }
+}

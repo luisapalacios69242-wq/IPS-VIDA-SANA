@@ -161,62 +161,69 @@
 
             <section id="seccion-horarios" class="seccion oculto">
                 <h2>Horarios y bloqueos</h2>
-                <label>Doctor</label>
-                <select id="selDoctorHorario" style="max-width:420px;"></select>
 
-                <div class="tarjeta" style="max-width:420px;">
-                    <h3>Asignar horario regular</h3>
-                    <label>Días de atención</label>
-                    <div style="display:flex; gap:6px; margin-bottom:6px;">
-                        <button type="button" id="btnLunesViernes"
-                            style="width:auto; margin-top:0; padding:5px 10px; font-size:0.75rem; background:#fff; color:#185fa5; border:1px solid #185fa5;">Lunes
-                            a viernes</button>
-                        <button type="button" id="btnLimpiarDias"
-                            style="width:auto; margin-top:0; padding:5px 10px; font-size:0.75rem; background:#fff; color:#5f5e5a; border:1px solid #d3d1c7;">Limpiar</button>
+                <div class="horarios-layout">
+                    <div class="horarios-col-izq">
+                        <label>Doctor</label>
+                        <select id="selDoctorHorario"></select>
+
+                        <div class="tarjeta">
+                            <h3>Asignar horario regular</h3>
+                            <label>Días de atención</label>
+                            <div style="display:flex; gap:6px; margin-bottom:6px;">
+                                <button type="button" id="btnLunesViernes"
+                                    style="width:auto; margin-top:0; padding:5px 10px; font-size:0.75rem; background:#fff; color:#185fa5; border:1px solid #185fa5;">Lunes
+                                    a viernes</button>
+                                <button type="button" id="btnLimpiarDias"
+                                    style="width:auto; margin-top:0; padding:5px 10px; font-size:0.75rem; background:#fff; color:#5f5e5a; border:1px solid #d3d1c7;">Limpiar</button>
+                            </div>
+                            <div id="checksDias">
+                                <label
+                                    style="display:flex; align-items:center; gap:8px; font-weight:normal; margin:4px 0;"><input
+                                        type="checkbox" class="chk-dia" value="Lunes"> Lunes</label>
+                                <label
+                                    style="display:flex; align-items:center; gap:8px; font-weight:normal; margin:4px 0;"><input
+                                        type="checkbox" class="chk-dia" value="Martes"> Martes</label>
+                                <label
+                                    style="display:flex; align-items:center; gap:8px; font-weight:normal; margin:4px 0;"><input
+                                        type="checkbox" class="chk-dia" value="Miercoles"> Miércoles</label>
+                                <label
+                                    style="display:flex; align-items:center; gap:8px; font-weight:normal; margin:4px 0;"><input
+                                        type="checkbox" class="chk-dia" value="Jueves"> Jueves</label>
+                                <label
+                                    style="display:flex; align-items:center; gap:8px; font-weight:normal; margin:4px 0;"><input
+                                        type="checkbox" class="chk-dia" value="Viernes"> Viernes</label>
+                                <label
+                                    style="display:flex; align-items:center; gap:8px; font-weight:normal; margin:4px 0;"><input
+                                        type="checkbox" class="chk-dia" value="Sabado"> Sábado</label>
+                            </div>
+                            <label>Hora inicio</label>
+                            <input type="time" id="horInicio">
+                            <label>Hora fin</label>
+                            <input type="time" id="horFin">
+                            <button id="btnAsignarHorario">Asignar horario</button>
+                            <p id="mensajeHorario" class="error"></p>
+                        </div>
+
+                        <div class="tarjeta">
+                            <h3>Crear bloqueo puntual</h3>
+                            <label>Fecha</label>
+                            <input type="date" id="bloqFecha">
+                            <label>Hora inicio</label>
+                            <input type="time" id="bloqInicio">
+                            <label>Hora fin</label>
+                            <input type="time" id="bloqFin">
+                            <label>Motivo</label>
+                            <input type="text" id="bloqMotivo" placeholder="Ej. Incapacidad médica">
+                            <button id="btnCrearBloqueo">Crear bloqueo</button>
+                            <p id="mensajeBloqueo" class="error"></p>
+                        </div>
                     </div>
-                    <div id="checksDias">
-                        <label
-                            style="display:flex; align-items:center; gap:8px; font-weight:normal; margin:4px 0;"><input
-                                type="checkbox" class="chk-dia" value="Lunes"> Lunes</label>
-                        <label
-                            style="display:flex; align-items:center; gap:8px; font-weight:normal; margin:4px 0;"><input
-                                type="checkbox" class="chk-dia" value="Martes"> Martes</label>
-                        <label
-                            style="display:flex; align-items:center; gap:8px; font-weight:normal; margin:4px 0;"><input
-                                type="checkbox" class="chk-dia" value="Miercoles"> Miércoles</label>
-                        <label
-                            style="display:flex; align-items:center; gap:8px; font-weight:normal; margin:4px 0;"><input
-                                type="checkbox" class="chk-dia" value="Jueves"> Jueves</label>
-                        <label
-                            style="display:flex; align-items:center; gap:8px; font-weight:normal; margin:4px 0;"><input
-                                type="checkbox" class="chk-dia" value="Viernes"> Viernes</label>
-                        <label
-                            style="display:flex; align-items:center; gap:8px; font-weight:normal; margin:4px 0;"><input
-                                type="checkbox" class="chk-dia" value="Sabado"> Sábado</label>
+
+                    <div class="horarios-col-der">
+                        <div id="listaHorarios"></div>
                     </div>
-                    <label>Hora inicio</label>
-                    <input type="time" id="horInicio">
-                    <label>Hora fin</label>
-                    <input type="time" id="horFin">
-                    <button id="btnAsignarHorario">Asignar horario</button>
-                    <p id="mensajeHorario" class="error"></p>
                 </div>
-
-                <div class="tarjeta" style="max-width:420px;">
-                    <h3>Crear bloqueo puntual</h3>
-                    <label>Fecha</label>
-                    <input type="date" id="bloqFecha">
-                    <label>Hora inicio</label>
-                    <input type="time" id="bloqInicio">
-                    <label>Hora fin</label>
-                    <input type="time" id="bloqFin">
-                    <label>Motivo</label>
-                    <input type="text" id="bloqMotivo" placeholder="Ej. Incapacidad médica">
-                    <button id="btnCrearBloqueo">Crear bloqueo</button>
-                    <p id="mensajeBloqueo" class="error"></p>
-                </div>
-
-                <div id="listaHorarios"></div>
             </section>
 
             <section id="seccion-informes" class="seccion oculto">
