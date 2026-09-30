@@ -985,3 +985,8 @@ input[readonly], select[disabled] {
 #contenidoDocumentos::-webkit-scrollbar-track { background: #f1efe8; border-radius: 8px; }
 #contenidoDocumentos::-webkit-scrollbar-thumb { background: #b9c8da; border-radius: 8px; }
 #contenidoDocumentos::-webkit-scrollbar-thumb:hover { background: #8fa6c2; }
+
+/* Asegura que el panel de notificaciones sí se oculte, sin depender del orden de las reglas */
+.campana-panel.oculto {
+  display: none;
+}
