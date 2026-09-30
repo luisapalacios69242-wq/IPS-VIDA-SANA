@@ -8,7 +8,8 @@ formRecuperar.addEventListener('submit', async (e) => {
   const numero_documento_o_correo = document.getElementById('documentoOCorreo').value;
 
   try {
-    const respuesta = await fetch('http://localhost:4000/api/auth/olvide-contrasena', {
+    // frontend/js/recuperar.js, línea 11
+    const respuesta = await fetch('https://ips-vida-sana-production.up.railway.app/api/auth/olvide-contrasena', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ numero_documento_o_correo })
