@@ -1,4 +1,5 @@
 const PDFDocument = require('pdfkit');
+const path = require('path');
 const pool = require('../config/conexion');
 
 const IPS = {
@@ -9,14 +10,26 @@ const IPS = {
   correo: 'ipsvidasanamejoratusalud@gmail.com'
 };
 
+const LOGO_PATH = path.join(__dirname, '..', 'assets', 'logo-icono.png');
+
 const encabezado = (doc) => {
-  doc.fontSize(18).fillColor('#185fa5').text(IPS.nombre, { align: 'left' });
-  doc.fontSize(9).fillColor('#5f5e5a').text(IPS.eslogan);
-  doc.fontSize(8.5).fillColor('#5f5e5a')
-    .text(`${IPS.direccion}   ·   Tel: ${IPS.telefono}   ·   ${IPS.correo}`);
-  doc.moveDown(0.4);
-  doc.moveTo(50, doc.y).lineTo(doc.page.width - 50, doc.y)
-    .strokeColor('#185fa5').lineWidth(1.2).stroke();
+  const startY = doc.y;
+  const textX = 100;
+
+  try {
+    doc.image(LOGO_PATH, 50, startY, { width: 40 });
+  } catch (e) {
+    // si el logo no está disponible, sigue sin romper el PDF
+  }
+
+  doc.fontSize(17).fillColor('#000000').font('Helvetica-Bold').text(IPS.nombre, textX, startY);
+  doc.font('Helvetica').fontSize(9).fillColor('#333333').text(IPS.eslogan, textX);
+  doc.fontSize(8.5).fillColor('#333333')
+    .text(`${IPS.direccion}   ·   Tel: ${IPS.telefono}   ·   ${IPS.correo}`, textX);
+
+  doc.y = Math.max(doc.y, startY + 42) + 10;
+  doc.strokeColor('#000000').lineWidth(1)
+    .moveTo(50, doc.y).lineTo(doc.page.width - 50, doc.y).stroke();
   doc.moveDown(1);
 };
 
@@ -29,36 +42,54 @@ const categoriaIMC = (imc) => {
   return 'Obesidad grado III';
 };
 
-// Dibuja una tabla genérica en pdfkit (no trae soporte nativo de tablas).
-// columnas: [{ titulo, ancho }]   filas: [[valor1, valor2, ...], ...]
+// Tabla en blanco y negro, con bordes tipo formato clínico (sin rellenos de color).
 const dibujarTabla = (doc, { titulo, columnas, filas, mostrarCabecera = true }) => {
   const anchoTotal = doc.page.width - 100;
   const startX = doc.page.margins.left;
   const anchos = columnas.map(c => c.ancho || anchoTotal / columnas.length);
+  const anchoReal = anchos.reduce((a, b) => a + b, 0);
   const padY = 6;
   const fsCabecera = 9.5;
   const fsFila = 9;
+  const colorBorde = '#4b5563';
+  const colorTexto = '#000000';
 
   if (titulo) {
-    doc.fontSize(12).fillColor('#185fa5').text(titulo);
+    doc.font('Helvetica-Bold').fontSize(12).fillColor('#000000').text(titulo);
+    doc.font('Helvetica');
     doc.moveDown(0.3);
   }
 
+  const lineasVerticales = (y, alto) => {
+    let x = startX;
+    doc.strokeColor(colorBorde).lineWidth(0.6);
+    columnas.forEach((col, i) => {
+      doc.moveTo(x, y).lineTo(x, y + alto).stroke();
+      x += anchos[i];
+    });
+    doc.moveTo(x, y).lineTo(x, y + alto).stroke();
+  };
+
   const dibujarCabecera = () => {
     const y = doc.y;
-    doc.rect(startX, y, anchoTotal, 22).fill('#185fa5');
+    const alto = 22;
     let x = startX;
-    doc.fillColor('#ffffff').fontSize(fsCabecera);
+    doc.font('Helvetica-Bold').fillColor('#000000').fontSize(fsCabecera);
     columnas.forEach((col, i) => {
       doc.text(col.titulo, x + 6, y + 6, { width: anchos[i] - 12 });
       x += anchos[i];
     });
-    doc.y = y + 22;
+    doc.font('Helvetica');
+    doc.strokeColor(colorBorde).lineWidth(0.9);
+    doc.moveTo(startX, y).lineTo(startX + anchoReal, y).stroke();
+    doc.moveTo(startX, y + alto).lineTo(startX + anchoReal, y + alto).stroke();
+    lineasVerticales(y, alto);
+    doc.y = y + alto;
   };
 
   if (mostrarCabecera) dibujarCabecera();
 
-  filas.forEach((fila, idx) => {
+  filas.forEach((fila) => {
     const alturas = columnas.map((col, i) =>
       doc.heightOfString(String(fila[i] ?? ''), { width: anchos[i] - 12, fontSize: fsFila })
     );
@@ -70,14 +101,17 @@ const dibujarTabla = (doc, { titulo, columnas, filas, mostrarCabecera = true }) 
     }
 
     const y = doc.y;
-    if (idx % 2 === 0) doc.rect(startX, y, anchoTotal, alturaFila).fill('#f1f6fb');
-
     let x = startX;
-    doc.fillColor('#1f2937').fontSize(fsFila);
+    doc.fillColor(colorTexto).fontSize(fsFila);
     columnas.forEach((col, i) => {
       doc.text(String(fila[i] ?? ''), x + 6, y + padY, { width: anchos[i] - 12 });
       x += anchos[i];
     });
+
+    doc.strokeColor(colorBorde).lineWidth(0.6);
+    doc.moveTo(startX, y + alturaFila).lineTo(startX + anchoReal, y + alturaFila).stroke();
+    lineasVerticales(y, alturaFila);
+
     doc.y = y + alturaFila;
   });
 
