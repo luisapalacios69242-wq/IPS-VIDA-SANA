@@ -1,0 +1,371 @@
+/* ============================================================
+   Botón de cambio de tema (claro/oscuro)
+   ============================================================ */
+.btn-tema {
+  width: 38px;
+  height: 38px;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid #d3d1c7;
+  border-radius: 10px;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+}
+
+.btn-tema:hover {
+  background: #f1f6fb;
+  border-color: #b9c8da;
+  color: #185fa5;
+}
+
+.btn-tema:active {
+  transform: scale(0.92);
+}
+
+.btn-tema-flotante {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 200;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* ============================================================
+   MODO OSCURO
+   Se activa con data-theme="dark" en <html> (ver js/tema.js).
+   ============================================================ */
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* ---- Base y formularios (estilos.css) ---- */
+html[data-theme="dark"] body {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .pagina-login {
+  background-color: #0f172a;
+}
+
+html[data-theme="dark"] .contenedor-login,
+html[data-theme="dark"] .registro-header,
+html[data-theme="dark"] .tarjeta,
+html[data-theme="dark"] .tarjeta-informe,
+html[data-theme="dark"] .panel-topbar,
+html[data-theme="dark"] .panel-sidebar,
+html[data-theme="dark"] .campana-panel,
+html[data-theme="dark"] .fila-cita,
+html[data-theme="dark"] .calendario,
+html[data-theme="dark"] .dia-semana,
+html[data-theme="dark"] .grupo-horario,
+html[data-theme="dark"] .tarjeta-aviso {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .login-flex {
+  border-color: #334155;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="dark"] .login-marca {
+  background: #172439;
+}
+
+html[data-theme="dark"] .login-flex .contenedor-login {
+  border-left-color: #334155;
+}
+
+html[data-theme="dark"] .icono-consultorio,
+html[data-theme="dark"] .registro-header-logo {
+  background: #172439;
+}
+
+html[data-theme="dark"] h1,
+html[data-theme="dark"] .registro-titulo,
+html[data-theme="dark"] .panel-marca,
+html[data-theme="dark"] .tarjeta h3,
+html[data-theme="dark"] .campana-cabecera strong,
+html[data-theme="dark"] .numero-grande,
+html[data-theme="dark"] .fila-informe strong {
+  color: #7fb4e8;
+}
+
+html[data-theme="dark"] .subtitulo,
+html[data-theme="dark"] .nota,
+html[data-theme="dark"] label,
+html[data-theme="dark"] .tarjeta label,
+html[data-theme="dark"] details label,
+html[data-theme="dark"] .ayuda-calendario,
+html[data-theme="dark"] .panel-usuario,
+html[data-theme="dark"] .cal-semana span,
+html[data-theme="dark"] .campana-fecha,
+html[data-theme="dark"] .divisor span {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] .tarjeta-formulario input,
+html[data-theme="dark"] .tarjeta-formulario select,
+html[data-theme="dark"] .seccion > select,
+html[data-theme="dark"] .horarios-col-izq > select {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] input[readonly],
+html[data-theme="dark"] select[disabled] {
+  background: #1e293b;
+  color: #64748b;
+}
+
+html[data-theme="dark"] .divisor hr {
+  border-top-color: #334155;
+}
+
+html[data-theme="dark"] .btn-secundario {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .btn-campana,
+html[data-theme="dark"] .btn-tema,
+html[data-theme="dark"] .panel-usuario button,
+html[data-theme="dark"] .btn-borrar-grupo,
+html[data-theme="dark"] .btn-borrar-bloqueo,
+html[data-theme="dark"] .franjas .franja {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .btn-campana:hover,
+html[data-theme="dark"] .btn-tema:hover {
+  background: #24334a;
+  color: #7fb4e8;
+}
+
+html[data-theme="dark"] .campana-panel::before,
+html[data-theme="dark"] .campana-cabecera {
+  background: #172439;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .campana-item:hover {
+  background: #24334a;
+}
+
+html[data-theme="dark"] .campana-item.no-leida {
+  background: #1b2b40;
+}
+
+html[data-theme="dark"] .campana-item.no-leida:hover {
+  background: #22334c;
+}
+
+html[data-theme="dark"] .campana-item p {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .campana-vacio {
+  color: #64748b;
+}
+
+html[data-theme="dark"] .campana-lista::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+html[data-theme="dark"] .panel-body {
+  background: #0b1220;
+}
+
+html[data-theme="dark"] .seccion h2 {
+  color: #7fb4e8;
+  border-bottom-color: #1e293b;
+}
+
+html[data-theme="dark"] .nav-item {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .nav-item:hover {
+  background: #1b2b40;
+  color: #7fb4e8;
+}
+
+html[data-theme="dark"] .nav-item.activo {
+  background: #1b2b40;
+  color: #7fb4e8;
+  border-left-color: #7fb4e8;
+}
+
+html[data-theme="dark"] .estado-badge {
+  background: #334155;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .consulta-item {
+  border-left-color: #7fb4e8;
+}
+
+html[data-theme="dark"] details summary {
+  color: #7fb4e8;
+}
+
+html[data-theme="dark"] .dia-semana strong {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .dia-semana.activo {
+  background: #1b2b40;
+  border-color: #2c4d70;
+}
+
+html[data-theme="dark"] .dia-semana.activo strong {
+  color: #7fb4e8;
+}
+
+html[data-theme="dark"] .sin-atencion {
+  color: #64748b;
+}
+
+html[data-theme="dark"] .cal-dia.laboral,
+html[data-theme="dark"] .cal-dia.disponible {
+  background: #1b2b40;
+  color: #7fb4e8;
+}
+
+html[data-theme="dark"] .cal-dia.bloqueado {
+  background: #3a1e1e;
+  color: #f87171;
+}
+
+html[data-theme="dark"] .cal-dia.hoy {
+  border-color: #7fb4e8;
+}
+
+html[data-theme="dark"] .cal-dia.seleccionado {
+  background: #185fa5;
+  color: #fff;
+}
+
+html[data-theme="dark"] .cal-dia.seleccionado.bloqueado {
+  background: #b91c1c;
+}
+
+html[data-theme="dark"] .cal-dia.sin-cupo {
+  color: #475569;
+}
+
+html[data-theme="dark"] .cal-leyenda {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .chip-dia {
+  background: #1b2b40;
+  color: #7fb4e8;
+}
+
+html[data-theme="dark"] .franjas .franja {
+  color: #7fb4e8;
+  border-color: #2c4d70;
+}
+
+html[data-theme="dark"] .franjas .franja.elegida {
+  background: #185fa5;
+  color: #fff;
+  border-color: #185fa5;
+}
+
+html[data-theme="dark"] .error {
+  color: #f87171;
+}
+
+html[data-theme="dark"] .seccion > label,
+html[data-theme="dark"] .horarios-col-izq > label,
+html[data-theme="dark"] .tarjeta-formulario label {
+  color: #cbd5e1;
+}
+
+/* ---- Bienvenida (página pública) ---- */
+html[data-theme="dark"] body,
+html[data-theme="dark"] .vs-hero {
+  background: #0f172a;
+}
+
+html[data-theme="dark"] .vs-hero {
+  background: linear-gradient(135deg, #16223a 0%, #0f172a 60%);
+}
+
+html[data-theme="dark"] .vs-header,
+html[data-theme="dark"] .vs-acceso-card,
+html[data-theme="dark"] .vs-esp-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .vs-especialidades {
+  background: #16223a;
+}
+
+html[data-theme="dark"] .vs-logo-texto,
+html[data-theme="dark"] .vs-hero-texto h1,
+html[data-theme="dark"] .vs-accesos h2,
+html[data-theme="dark"] .vs-especialidades h2,
+html[data-theme="dark"] .vs-nosotros h2,
+html[data-theme="dark"] .vs-acceso-card h3,
+html[data-theme="dark"] .vs-esp-card h3,
+html[data-theme="dark"] .vs-hero-tarjeta strong {
+  color: #7fb4e8;
+}
+
+html[data-theme="dark"] .vs-menu a,
+html[data-theme="dark"] .vs-valor h3 {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .vs-hero-texto p,
+html[data-theme="dark"] .vs-subtitulo,
+html[data-theme="dark"] .vs-acceso-card p,
+html[data-theme="dark"] .vs-esp-card p,
+html[data-theme="dark"] .vs-valor p,
+html[data-theme="dark"] .vs-hero-tarjeta span {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .vs-hero-tarjeta {
+  background: #1e293b;
+}
+
+html[data-theme="dark"] .vs-etiqueta {
+  background: #1b2b40;
+  color: #7fb4e8;
+}
+
+html[data-theme="dark"] .vs-btn-outline {
+  color: #7fb4e8;
+  border-color: #7fb4e8;
+}
+
+html[data-theme="dark"] .vs-btn-outline:hover {
+  background: #1b2b40;
+}
+
+html[data-theme="dark"] .vs-acceso-card .vs-icono,
+html[data-theme="dark"] .vs-esp-card .vs-icono {
+  background: #1b2b40;
+  color: #7fb4e8;
+}
+
+/* El footer y el testimonio de bienvenida ya son oscuros de por sí: no necesitan cambios */
