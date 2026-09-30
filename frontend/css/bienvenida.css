@@ -543,3 +543,14 @@ a {
     align-items: flex-start;
   }
 }
+
+.vs-footer-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.vs-footer-icono {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
