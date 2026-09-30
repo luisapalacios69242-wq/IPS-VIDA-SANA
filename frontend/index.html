@@ -8,34 +8,42 @@
 </head>
 
 <body class="pagina-login">
-  <div class="contenedor-login">
-    <div class="icono-consultorio">🩺</div>
-    <h1>Consultorio Vida Sana</h1>
-    <p class="subtitulo">Sistema de gestión de citas médicas</p>
-
-    <form id="formLogin">
-      <label for="documento">Número de documento</label>
-      <input type="text" id="documento" placeholder="1234567890" required>
-
-      <label for="contrasena">Contraseña</label>
-      <div class="campo-contrasena">
-        <input type="password" id="contrasena" placeholder="••••••••" required>
-        <button type="button" id="btnVerContrasena" class="boton-ojo">👁️</button>
-      </div>
-      <a href="recuperar.html" class="enlace-olvido">Olvidé mi contraseña</a>
-
-      <button type="submit" class="btn-primario">Iniciar sesión</button>
-      <p id="mensajeError" class="error"></p>
-    </form>
-
-    <div class="divisor">
-      <hr><span>o</span>
-      <hr>
+  <div class="login-flex">
+    <div class="login-marca">
+      <img src="img/logo-completo.png" alt="Vida Sana" class="login-logo-grande">
     </div>
 
-    <a href="registro.html" class="btn-secundario">Registrarme como paciente</a>
+    <div class="contenedor-login">
+      <div class="icono-consultorio">
+        <img src="img/logo-icono.png" alt="Vida Sana">
+      </div>
+      <h1>Consultorio Vida Sana</h1>
+      <p class="subtitulo">Sistema de gestión de citas médicas</p>
 
-    <p class="nota">Doctores y secretaria ingresan con las credenciales asignadas por el administrador.</p>
+      <form id="formLogin">
+        <label for="documento">Número de documento</label>
+        <input type="text" id="documento" placeholder="1234567890" required>
+
+        <label for="contrasena">Contraseña</label>
+        <div class="campo-contrasena">
+          <input type="password" id="contrasena" placeholder="••••••••" required>
+          <button type="button" id="btnVerContrasena" class="boton-ojo">👁️</button>
+        </div>
+        <a href="recuperar.html" class="enlace-olvido">Olvidé mi contraseña</a>
+
+        <button type="submit" class="btn-primario">Iniciar sesión</button>
+        <p id="mensajeError" class="error"></p>
+      </form>
+
+      <div class="divisor">
+        <hr><span>o</span>
+        <hr>
+      </div>
+
+      <a href="registro.html" class="btn-secundario">Registrarme como paciente</a>
+
+      <p class="nota">Doctores y secretaria ingresan con las credenciales asignadas por el administrador.</p>
+    </div>
   </div>
 
   <script src="js/script.js"></script>
