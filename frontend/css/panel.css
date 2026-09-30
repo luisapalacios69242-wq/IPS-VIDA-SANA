@@ -859,3 +859,28 @@ input[readonly], select[disabled] {
     width: 100%;
   }
 }
+
+/* ===== Scroll interno para el historial de citas ===== */
+#listaCitas {
+  max-height: 640px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+#listaCitas::-webkit-scrollbar {
+  width: 8px;
+}
+
+#listaCitas::-webkit-scrollbar-track {
+  background: #f1efe8;
+  border-radius: 8px;
+}
+
+#listaCitas::-webkit-scrollbar-thumb {
+  background: #b9c8da;
+  border-radius: 8px;
+}
+
+#listaCitas::-webkit-scrollbar-thumb:hover {
+  background: #8fa6c2;
+}
