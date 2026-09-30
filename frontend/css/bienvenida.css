@@ -145,13 +145,18 @@ a {
 /* ===== Hero ===== */
 .vs-hero {
   background: linear-gradient(135deg, var(--azul-claro) 0%, var(--blanco) 60%);
-  padding: 64px 0 96px;
+  padding: 72px 0;
+}
+
+.vs-hero .vs-contenedor {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 48px;
+  align-items: center;
 }
 
 .vs-hero-texto {
-  max-width: 720px;
-  margin: 0 auto 40px;
-  text-align: center;
+  text-align: left;
 }
 
 .vs-hero-texto h1 {
@@ -164,15 +169,15 @@ a {
 .vs-hero-texto p {
   color: var(--gris-texto);
   font-size: 1.08rem;
-  margin: 0 auto 28px;
-  max-width: 560px;
+  margin-bottom: 28px;
+  max-width: 480px;
 }
 
 .vs-hero-botones {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .vs-hero-imagen {
@@ -181,7 +186,7 @@ a {
 
 .vs-hero-foto {
   width: 100%;
-  height: 420px;
+  height: 400px;
   object-fit: cover;
   border-radius: 20px;
   box-shadow: var(--sombra);
@@ -190,7 +195,7 @@ a {
 .vs-hero-tarjeta {
   position: absolute;
   bottom: -24px;
-  left: 40px;
+  left: -24px;
   background: var(--blanco);
   padding: 18px 22px;
   border-radius: 16px;
@@ -490,6 +495,7 @@ a {
     display: none;
   }
 
+  .vs-hero .vs-contenedor,
   .vs-nosotros-grid {
     grid-template-columns: 1fr;
   }
@@ -504,10 +510,6 @@ a {
 
   .vs-footer-grid {
     grid-template-columns: 1fr 1fr;
-  }
-
-  .vs-hero-foto {
-    height: 300px;
   }
 
   .vs-hero-tarjeta {
