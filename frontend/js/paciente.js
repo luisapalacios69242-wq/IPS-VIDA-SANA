@@ -1,4 +1,4 @@
-const API = 'http://localhost:4000/api';
+const API = 'https://ips-vida-sana-production.up.railway.app';
 
 const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
 
@@ -140,7 +140,7 @@ const cargarHistoriaCompleta = async () => {
 
     contenedor.innerHTML = `
       <h3>Historial de consultas</h3>
-      <a href="http://localhost:4000/api/documentos/historia-clinica/${usuario.id_paciente}/pdf" target="_blank">
+      <a href="https://ips-vida-sana-production.up.railway.app/api/documentos/historia-clinica/${usuario.id_paciente}/pdf" target="_blank">
         <button style="width:100%;">Descargar historia clínica completa (PDF)</button>
       </a>
       ${consultasHtml}
@@ -164,7 +164,7 @@ const cargarDocumentos = async () => {
       ? datos.atenciones.map(a => `
           <div class="fila-cita">
             <div>${a.fecha} — Dr(a). ${a.doctor_nombres} ${a.doctor_apellidos}</div>
-            <a href="http://localhost:4000/api/documentos/atencion/${a.id_consulta}/pdf" target="_blank">
+            <a href="https://ips-vida-sana-production.up.railway.app/api/documentos/atencion/${a.id_consulta}/pdf" target="_blank">
               <button>Descargar PDF</button>
             </a>
           </div>
@@ -175,7 +175,7 @@ const cargarDocumentos = async () => {
       ? datos.formulas.map(f => `
           <div class="fila-cita">
             <div>Fórmula médica — ${f.fecha}</div>
-            <a href="http://localhost:4000/api/documentos/formula/${f.id_formula}/pdf" target="_blank">
+            <a href="https://ips-vida-sana-production.up.railway.app/api/documentos/formula/${f.id_formula}/pdf" target="_blank">
               <button>Descargar PDF</button>
             </a>
           </div>
@@ -186,7 +186,7 @@ const cargarDocumentos = async () => {
       ? datos.ordenes.map(o => `
           <div class="fila-cita">
             <div>${o.examenes} — ${o.fecha}</div>
-            <a href="http://localhost:4000/api/documentos/orden/${o.id_orden}/pdf" target="_blank">
+            <a href="https://ips-vida-sana-production.up.railway.app/api/documentos/orden/${o.id_orden}/pdf" target="_blank">
               <button>Descargar PDF</button>
             </a>
           </div>
@@ -197,7 +197,7 @@ const cargarDocumentos = async () => {
       ? datos.incapacidades.map(i => `
           <div class="fila-cita">
             <div>Del ${i.fecha_inicio} al ${i.fecha_fin} — ${i.dias_incapacidad} día(s)</div>
-            <a href="http://localhost:4000/api/documentos/incapacidad/${i.id_incapacidad}/pdf" target="_blank">
+            <a href="https://ips-vida-sana-production.up.railway.app/api/documentos/incapacidad/${i.id_incapacidad}/pdf" target="_blank">
               <button>Descargar PDF</button>
             </a>
           </div>

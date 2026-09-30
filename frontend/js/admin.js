@@ -1,4 +1,4 @@
-const API = 'http://localhost:4000/api';
+const API = 'https://ips-vida-sana-production.up.railway.app';
 
 const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
 

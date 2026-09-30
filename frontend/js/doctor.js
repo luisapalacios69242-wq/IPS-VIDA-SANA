@@ -1,4 +1,4 @@
-const API = 'http://localhost:4000/api';
+const API = 'https://ips-vida-sana-production.up.railway.app';
 
 const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
 
@@ -319,7 +319,7 @@ async function mostrarAccionesPostAtencion(id_cita, id_consulta) {
     contenedor.innerHTML = `
     <p style="color:#15803d; font-weight:600;">Consulta atendida correctamente.</p>
 
-    <a href="http://localhost:4000/api/documentos/atencion/${id_consulta}/pdf" target="_blank">
+    <a href="https://ips-vida-sana-production.up.railway.app/api/documentos/atencion/${id_consulta}/pdf" target="_blank">
       <button style="background:#fff; color:#185fa5; border:1px solid #185fa5;">Descargar resumen de esta atención (PDF)</button>
     </a>
 

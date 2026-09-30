@@ -1,4 +1,4 @@
-const API = 'http://localhost:4000/api';
+const API = 'https://ips-vida-sana-production.up.railway.app';
 
 const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
 
@@ -411,7 +411,7 @@ async function verHistoriaCompleta(id_paciente) {
 
         contenedor.innerHTML = `
           <h3>Historial de consultas</h3>
-          <a href="http://localhost:4000/api/documentos/historia-clinica/${id_paciente}/pdf" target="_blank">
+          <a href="https://ips-vida-sana-production.up.railway.app/api/documentos/historia-clinica/${id_paciente}/pdf" target="_blank">
             <button style="width:100%;">Descargar historia clínica completa (PDF)</button>
           </a>
           ${consultasHtml}
@@ -434,7 +434,7 @@ async function verDocumentos(id_paciente) {
             ? datos.atenciones.map(a => `
           <div class="fila-cita">
             <div>${a.fecha} — Dr(a). ${a.doctor_nombres} ${a.doctor_apellidos}</div>
-            <a href="http://localhost:4000/api/documentos/atencion/${a.id_consulta}/pdf" target="_blank">
+            <a href="https://ips-vida-sana-production.up.railway.app/api/documentos/atencion/${a.id_consulta}/pdf" target="_blank">
               <button>Descargar PDF</button>
             </a>
           </div>
@@ -445,7 +445,7 @@ async function verDocumentos(id_paciente) {
             ? datos.formulas.map(f => `
           <div class="fila-cita">
             <div>Fórmula médica — ${f.fecha}</div>
-            <a href="http://localhost:4000/api/documentos/formula/${f.id_formula}/pdf" target="_blank">
+            <a href="https://ips-vida-sana-production.up.railway.app/api/documentos/formula/${f.id_formula}/pdf" target="_blank">
               <button>Descargar PDF</button>
             </a>
           </div>
@@ -456,7 +456,7 @@ async function verDocumentos(id_paciente) {
             ? datos.ordenes.map(o => `
           <div class="fila-cita">
             <div>${o.examenes} — ${o.fecha}</div>
-            <a href="http://localhost:4000/api/documentos/orden/${o.id_orden}/pdf" target="_blank">
+            <a href="https://ips-vida-sana-production.up.railway.app/api/documentos/orden/${o.id_orden}/pdf" target="_blank">
               <button>Descargar PDF</button>
             </a>
           </div>
@@ -701,7 +701,7 @@ async function cargarFacturasDelDia() {
                     ${f.estado === 'pendiente'
                         ? `<button class="btn-marcar-pagada" data-id="${f.id_factura}" style="width:auto;">Marcar pagada</button>`
                         : ''}
-                    <a href="http://localhost:4000/api/documentos/factura/${f.id_factura}/pdf" target="_blank">
+                    <a href="https://ips-vida-sana-production.up.railway.app/api/documentos/factura/${f.id_factura}/pdf" target="_blank">
                       <button style="width:auto;">PDF</button>
                     </a>
                   </div>
