@@ -104,8 +104,23 @@ a {
   gap: 24px;
 }
 
+.vs-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .vs-logo img {
   height: 44px;
+  width: 44px;
+  object-fit: contain;
+}
+
+.vs-logo-texto {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--azul-oscuro);
+  letter-spacing: 0.3px;
 }
 
 .vs-menu {
@@ -130,14 +145,13 @@ a {
 /* ===== Hero ===== */
 .vs-hero {
   background: linear-gradient(135deg, var(--azul-claro) 0%, var(--blanco) 60%);
-  padding: 72px 0;
+  padding: 64px 0 96px;
 }
 
-.vs-hero-grid {
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 48px;
-  align-items: center;
+.vs-hero-texto {
+  max-width: 720px;
+  margin: 0 auto 40px;
+  text-align: center;
 }
 
 .vs-hero-texto h1 {
@@ -150,14 +164,15 @@ a {
 .vs-hero-texto p {
   color: var(--gris-texto);
   font-size: 1.08rem;
-  margin-bottom: 28px;
-  max-width: 520px;
+  margin: 0 auto 28px;
+  max-width: 560px;
 }
 
 .vs-hero-botones {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .vs-hero-imagen {
@@ -166,7 +181,7 @@ a {
 
 .vs-hero-foto {
   width: 100%;
-  height: 380px;
+  height: 420px;
   object-fit: cover;
   border-radius: 20px;
   box-shadow: var(--sombra);
@@ -175,7 +190,7 @@ a {
 .vs-hero-tarjeta {
   position: absolute;
   bottom: -24px;
-  left: -24px;
+  left: 40px;
   background: var(--blanco);
   padding: 18px 22px;
   border-radius: 16px;
@@ -424,10 +439,24 @@ a {
   padding-bottom: 32px;
 }
 
+.vs-footer-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
 .vs-footer-logo {
   height: 40px;
-  margin-bottom: 12px;
+  width: 40px;
+  object-fit: contain;
   filter: brightness(0) invert(1);
+}
+
+.vs-footer-logo-texto {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--blanco);
 }
 
 .vs-footer h4 {
@@ -461,7 +490,6 @@ a {
     display: none;
   }
 
-  .vs-hero-grid,
   .vs-nosotros-grid {
     grid-template-columns: 1fr;
   }
@@ -476,6 +504,10 @@ a {
 
   .vs-footer-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .vs-hero-foto {
+    height: 300px;
   }
 
   .vs-hero-tarjeta {
