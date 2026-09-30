@@ -693,3 +693,44 @@ input[readonly], select[disabled] {
   font-weight: 600;
   border-left: 3px solid #185fa5;
 }
+
+/* ===== Centrar contenido de las secciones ===== */
+.seccion {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.seccion .tarjeta[style*="max-width"] {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ===== Selector de doctor (Horarios y bloqueos) ===== */
+.seccion > label {
+  display: block;
+  text-align: center;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.seccion > select {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto 20px;
+  padding: 11px 14px;
+  border: 1px solid #d3d1c7;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: #1f2937;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.seccion > select:focus {
+  outline: none;
+  border-color: #185fa5;
+  box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.12);
+}
