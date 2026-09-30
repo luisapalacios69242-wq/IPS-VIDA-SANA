@@ -797,17 +797,25 @@ input[readonly], select[disabled] {
 /* ===== Banner de bienvenida en Inicio ===== */
 .inicio-banner {
   width: 100%;
-  max-width: 900px;
+  max-width: 1100px;
   display: block;
-  margin: 0 auto 28px;
+  margin: 28px auto 0;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(18, 63, 107, 0.1);
 }
 
 #seccion-inicio {
-  max-width: 900px;
+  max-width: 1100px;
 }
 
+#proximaCita.tarjeta-aviso {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 28px 32px;
+  font-size: 1.05rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(18, 63, 107, 0.08);
+}
 /* ===== Layout de Mis citas: historial a la izquierda, agendador a la derecha ===== */
 #seccion-citas {
   max-width: 1100px;
