@@ -221,6 +221,7 @@ a {
   border: 1px solid #e3ecf5;
   border-radius: 16px;
   padding: 28px 22px;
+  text-align: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -231,8 +232,15 @@ a {
 }
 
 .vs-acceso-card .vs-icono {
-  font-size: 1.8rem;
-  margin-bottom: 12px;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: var(--azul-claro);
+  color: var(--azul);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .vs-acceso-card h3 {
@@ -269,19 +277,27 @@ a {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  text-align: left;
+  text-align: center;
 }
 
 .vs-esp-card {
   background: var(--blanco);
   border-radius: 16px;
   padding: 26px 22px;
+  text-align: center;
   box-shadow: 0 4px 14px rgba(18, 63, 107, 0.06);
 }
 
 .vs-esp-card .vs-icono {
-  font-size: 1.8rem;
-  margin-bottom: 12px;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: var(--azul-claro);
+  color: var(--azul);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .vs-esp-card h3 {
