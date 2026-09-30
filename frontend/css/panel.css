@@ -793,3 +793,62 @@ input[readonly], select[disabled] {
     width: 100%;
   }
 }
+
+/* ===== Banner de bienvenida en Inicio ===== */
+.inicio-banner {
+  width: 100%;
+  max-width: 900px;
+  display: block;
+  margin: 0 auto 28px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(18, 63, 107, 0.1);
+}
+
+#seccion-inicio {
+  max-width: 900px;
+}
+
+/* ===== Layout de Mis citas: historial a la izquierda, agendador a la derecha ===== */
+#seccion-citas {
+  max-width: 1100px;
+}
+
+.citas-layout {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.citas-col-izq {
+  flex: 1;
+  min-width: 0;
+}
+
+.citas-col-izq > div {
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+.citas-col-der {
+  flex: 0 0 380px;
+  max-width: 380px;
+}
+
+.citas-col-izq h3,
+.citas-col-der h3 {
+  color: #185fa5;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 900px) {
+  .citas-layout {
+    flex-direction: column;
+  }
+
+  .citas-col-der {
+    flex: 1;
+    max-width: none;
+    width: 100%;
+  }
+}

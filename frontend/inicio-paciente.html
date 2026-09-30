@@ -11,7 +11,10 @@
 <body class="panel-body">
 
   <div class="panel-topbar">
-    <div class="panel-marca">🩺 Consultorio Vida Sana</div>
+    <div class="panel-marca">
+      <img src="img/logo-icono.png" alt="Vida Sana">
+      Consultorio Vida Sana
+    </div>
     <div class="panel-usuario">
       <div id="zonaCampana"></div>
       <span id="nombreUsuario"></span>
@@ -31,6 +34,7 @@
 
       <section id="seccion-inicio" class="seccion">
         <h2>Bienvenido(a)</h2>
+        <img src="img/banner-bienvenida.jpg" alt="Vida Sana" class="inicio-banner">
         <div id="proximaCita" class="tarjeta-aviso">Cargando tu próxima cita...</div>
       </section>
 
@@ -44,9 +48,26 @@
         <div id="listaCitas"></div>
       </section>
 
-      <section id="seccion-historia" class="seccion oculto">
-        <h2>Historia clínica</h2>
-        <div id="contenidoHistoria"></div>
+      <section id="seccion-citas" class="seccion oculto">
+        <h2>Mis citas</h2>
+
+        <div class="citas-layout">
+          <div class="citas-col-izq">
+            <h3>Historial de citas</h3>
+            <div id="listaCitas"></div>
+          </div>
+          <div class="citas-col-der">
+            <h3>Agendar nueva cita</h3>
+            <div id="agendadorPaciente"></div>
+          </div>
+        </div>
+      </section>
+
+      <h3>Agendar nueva cita</h3>
+      <div id="agendadorPaciente"></div>
+
+      <h3>Historial de citas</h3>
+      <div id="listaCitas"></div>
       </section>
 
       <section id="seccion-documentos" class="seccion oculto">
