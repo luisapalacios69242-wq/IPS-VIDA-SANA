@@ -612,3 +612,84 @@ input[readonly], select[disabled] {
   color: #185fa5;
   margin: 4px 0 0;
 }
+
+/* ===== Mejoras generales del panel ===== */
+.panel-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 2px 10px rgba(18, 63, 107, 0.06);
+}
+
+.panel-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: #185fa5;
+}
+
+.panel-marca img {
+  height: 34px;
+  width: 34px;
+  object-fit: contain;
+}
+
+.seccion h2 {
+  text-align: center;
+  color: #123f6b;
+  font-size: 1.5rem;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #eaf2fb;
+}
+
+.tarjeta {
+  background: #ffffff;
+  border: 1px solid #e3ecf5;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(18, 63, 107, 0.06);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.tarjeta h3 {
+  color: #185fa5;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.panel-sidebar {
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  padding: 16px 0;
+}
+
+.nav-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  font-size: 0.92rem;
+  color: #374151;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+  background: #f3f8fd;
+  color: #185fa5;
+}
+
+.nav-item.activo {
+  background: #eaf2fb;
+  color: #185fa5;
+  font-weight: 600;
+  border-left: 3px solid #185fa5;
+}
