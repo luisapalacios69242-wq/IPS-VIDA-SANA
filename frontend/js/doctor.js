@@ -30,9 +30,37 @@ const formatearEstado = (estado) => {
     };
     return mapa[estado] || estado;
 };
+
 const medicamentosPorConsulta = {};
 const tiposExamenPorConsulta = {};
 const contextoCita = {};
+
+// ---------- Plantilla de consulta según la especialidad del doctor ----------
+let plantillaBase = 'general';
+let plantillaMixta = false;
+
+async function cargarEspecialidadesDoctor() {
+    try {
+        const respuesta = await fetch(`${API}/api/doctor/${usuario.id_doctor}/especialidades`);
+        const especialidades = await respuesta.json();
+        if (!respuesta.ok) return;
+
+        const nombres = especialidades.map(e =>
+            e.nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+        const tieneOdonto = nombres.some(n => n.includes('odontolog'));
+
+        plantillaMixta = tieneOdonto && nombres.some(n => !n.includes('odontolog'));
+        plantillaBase = tieneOdonto && !plantillaMixta ? 'odontologia' : 'general';
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function cambiarPlantilla(id_cita) {
+    const valor = document.getElementById(`plantilla-${id_cita}`).value;
+    document.getElementById(`bloque-general-${id_cita}`).classList.toggle('oculto', valor === 'odontologia');
+    document.getElementById(`bloque-odonto-${id_cita}`).classList.toggle('oculto', valor !== 'odontologia');
+}
 
 // ---------- Historia clínica (RH, alergias, antecedentes) ----------
 const RH_OPCIONES = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
@@ -49,15 +77,15 @@ function historiaHtml(prefijo, h, esPrimera) {
         </div>
         <div class="campo campo-full">
           <label>Alergias ${esPrimera ? '*' : ''}</label>
-          <textarea id="${prefijo}-alergias" rows="2" placeholder="Medicamentos, alimentos u otras. Si no tiene: Ninguna conocida">${esc(v.alergias)}</textarea>
+          <textarea id="${prefijo}-alergias" rows="3" placeholder="Medicamentos, alimentos u otras. Si no tiene: Ninguna conocida">${esc(v.alergias)}</textarea>
         </div>
         <div class="campo campo-full">
           <label>Antecedentes personales</label>
-          <textarea id="${prefijo}-ant-personales" rows="2" placeholder="Enfermedades, cirugías previas...">${esc(v.antecedentes_personales)}</textarea>
+          <textarea id="${prefijo}-ant-personales" rows="3" placeholder="Enfermedades, cirugías previas...">${esc(v.antecedentes_personales)}</textarea>
         </div>
         <div class="campo campo-full">
           <label>Antecedentes familiares</label>
-          <textarea id="${prefijo}-ant-familiares" rows="2" placeholder="Enfermedades en la familia...">${esc(v.antecedentes_familiares)}</textarea>
+          <textarea id="${prefijo}-ant-familiares" rows="3" placeholder="Enfermedades en la familia...">${esc(v.antecedentes_familiares)}</textarea>
         </div>
       </div>`;
 }
@@ -136,43 +164,91 @@ async function cargarAgenda() {
               <div id="zona-historia-${c.id_cita}"></div>
             </details>
 
-            <details open>
-              <summary>Signos vitales y examen físico</summary>
-              <div class="grid-2">
-                <div class="campo">
-                  <label>Peso (kg)</label>
-                  <input type="number" step="0.1" id="peso-${c.id_cita}" placeholder="Ej. 70.5">
+            ${plantillaMixta ? `
+              <div class="campo campo-full">
+                <label>Tipo de consulta</label>
+                <select id="plantilla-${c.id_cita}" onchange="cambiarPlantilla(${c.id_cita})">
+                  <option value="general">Medicina general</option>
+                  <option value="odontologia">Odontología</option>
+                </select>
+              </div>` : ''}
+
+            <div id="bloque-general-${c.id_cita}" class="${plantillaBase === 'odontologia' ? 'oculto' : ''}">
+              <details open>
+                <summary>Signos vitales y examen físico</summary>
+                <div class="grid-2">
+                  <div class="campo">
+                    <label>Peso (kg)</label>
+                    <input type="number" step="0.1" id="peso-${c.id_cita}" placeholder="Ej. 70.5">
+                  </div>
+                  <div class="campo">
+                    <label>Talla (cm)</label>
+                    <input type="number" step="0.1" id="talla-${c.id_cita}" placeholder="Ej. 170">
+                  </div>
+                  <div class="campo">
+                    <label>Presión arterial</label>
+                    <input type="text" id="presion-${c.id_cita}" placeholder="Ej. 120/80">
+                  </div>
+                  <div class="campo">
+                    <label>Temperatura (°C)</label>
+                    <input type="number" step="0.1" id="temperatura-${c.id_cita}" placeholder="Ej. 36.5">
+                  </div>
+                  <div class="campo">
+                    <label>Frecuencia cardíaca (lpm)</label>
+                    <input type="number" id="fc-${c.id_cita}" placeholder="Ej. 75">
+                  </div>
+                  <div class="campo">
+                    <label>Frecuencia respiratoria (rpm)</label>
+                    <input type="number" id="fr-${c.id_cita}" placeholder="Ej. 16">
+                  </div>
+                  <div class="campo campo-full">
+                    <label>Examen físico</label>
+                    <textarea id="examen-fisico-${c.id_cita}" rows="4" placeholder="Palpaciones, auscultación, hallazgos..."></textarea>
+                  </div>
                 </div>
-                <div class="campo">
-                  <label>Talla (cm)</label>
-                  <input type="number" step="0.1" id="talla-${c.id_cita}" placeholder="Ej. 170">
+              </details>
+            </div>
+
+            <div id="bloque-odonto-${c.id_cita}" class="${plantillaBase === 'odontologia' ? '' : 'oculto'}">
+              <details open>
+                <summary>Consulta odontológica</summary>
+                <div class="grid-2">
+                  <div class="campo campo-full">
+                    <label>Motivo de consulta *</label>
+                    <textarea id="odo-motivo-${c.id_cita}" rows="3" placeholder="Por qué consulta el paciente"></textarea>
+                  </div>
+                  <div class="campo campo-full">
+                    <label>Hallazgos orales (examen intraoral y extraoral)</label>
+                    <textarea id="odo-hallazgos-${c.id_cita}" rows="4" placeholder="Encías, mucosas, caries, movilidad, oclusión..."></textarea>
+                  </div>
+                  <div class="campo">
+                    <label>Piezas dentales tratadas (FDI)</label>
+                    <input type="text" id="odo-piezas-${c.id_cita}" placeholder="Ej. 16, 26">
+                  </div>
+                  <div class="campo">
+                    <label>Higiene oral</label>
+                    <select id="odo-higiene-${c.id_cita}">
+                      <option value="">Sin dato</option>
+                      <option value="Buena">Buena</option>
+                      <option value="Regular">Regular</option>
+                      <option value="Deficiente">Deficiente</option>
+                    </select>
+                  </div>
+                  <div class="campo campo-full">
+                    <label>Procedimiento realizado</label>
+                    <textarea id="odo-procedimiento-${c.id_cita}" rows="3" placeholder="Limpieza, resina, endodoncia, extracción..."></textarea>
+                  </div>
+                  <div class="campo campo-full">
+                    <label>Plan de tratamiento</label>
+                    <textarea id="odo-plan-${c.id_cita}" rows="3" placeholder="Próximas citas y procedimientos"></textarea>
+                  </div>
                 </div>
-                <div class="campo">
-                  <label>Presión arterial</label>
-                  <input type="text" id="presion-${c.id_cita}" placeholder="Ej. 120/80">
-                </div>
-                <div class="campo">
-                  <label>Temperatura (°C)</label>
-                  <input type="number" step="0.1" id="temperatura-${c.id_cita}" placeholder="Ej. 36.5">
-                </div>
-                <div class="campo">
-                  <label>Frecuencia cardíaca (lpm)</label>
-                  <input type="number" id="fc-${c.id_cita}" placeholder="Ej. 75">
-                </div>
-                <div class="campo">
-                  <label>Frecuencia respiratoria (rpm)</label>
-                  <input type="number" id="fr-${c.id_cita}" placeholder="Ej. 16">
-                </div>
-                <div class="campo campo-full">
-                  <label>Examen físico</label>
-                  <textarea id="examen-fisico-${c.id_cita}" rows="2" placeholder="Palpaciones, auscultación, hallazgos..."></textarea>
-                </div>
-              </div>
-            </details>
+              </details>
+            </div>
 
             <details open>
               <summary>Diagnóstico</summary>
-                            <label>Diagnóstico (CIE-10) *</label>
+              <label>Diagnóstico (CIE-10) *</label>
               <div class="dx-buscador">
                 <input type="text" id="dx-buscar-${c.id_cita}" autocomplete="off"
                        placeholder="Busca por código o nombre (ej. J00, hipertensión, gripe)"
@@ -182,7 +258,7 @@ async function cargarAgenda() {
               <input type="hidden" id="diagnostico-codigo-${c.id_cita}">
               <p id="dx-elegido-${c.id_cita}" class="dx-elegido"></p>
               <label>Observaciones</label>
-              <textarea id="observaciones-${c.id_cita}" rows="2" placeholder="Observaciones (opcional)"></textarea>
+              <textarea id="observaciones-${c.id_cita}" rows="5" placeholder="Observaciones (opcional)"></textarea>
               <button onclick="atenderConsulta(${c.id_cita})">Guardar atención</button>
               <button onclick="marcarNoAsistio(${c.id_cita})" style="background:#fff; color:#b91c1c; border:1px solid #d3d1c7; margin-top:6px;">Marcar no asistió</button>
             </details>
@@ -284,6 +360,14 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Las cajas de texto crecen según lo que se escribe.
+document.addEventListener('input', (e) => {
+    if (e.target.tagName === 'TEXTAREA' && e.target.closest('.tarjeta')) {
+        e.target.style.height = 'auto';
+        e.target.style.height = e.target.scrollHeight + 'px';
+    }
+});
+
 async function atenderConsulta(id_cita) {
     const contexto = contextoCita[id_cita];
 
@@ -309,16 +393,41 @@ async function atenderConsulta(id_cita) {
         return;
     }
 
+    const selector = document.getElementById(`plantilla-${id_cita}`);
+    const plantilla = selector ? selector.value : plantillaBase;
+    const esOdonto = plantilla === 'odontologia';
+    const general = (id) => esOdonto ? null : (valor(id) || null);
+
+    let datos_extra = null;
+
+    if (esOdonto) {
+        datos_extra = {
+            motivo_consulta: valor(`odo-motivo-${id_cita}`),
+            hallazgos_orales: valor(`odo-hallazgos-${id_cita}`),
+            piezas_tratadas: valor(`odo-piezas-${id_cita}`),
+            higiene_oral: valor(`odo-higiene-${id_cita}`),
+            procedimiento: valor(`odo-procedimiento-${id_cita}`),
+            plan_tratamiento: valor(`odo-plan-${id_cita}`)
+        };
+
+        if (!datos_extra.motivo_consulta) {
+            alert('Indica el motivo de consulta.');
+            return;
+        }
+    }
+
     const datosConsulta = {
         diagnostico_codigo,
         observaciones,
-        peso: valor(`peso-${id_cita}`) || null,
-        talla: valor(`talla-${id_cita}`) || null,
-        presion_arterial: valor(`presion-${id_cita}`) || null,
-        temperatura: valor(`temperatura-${id_cita}`) || null,
-        frecuencia_cardiaca: valor(`fc-${id_cita}`) || null,
-        frecuencia_respiratoria: valor(`fr-${id_cita}`) || null,
-        examen_fisico: valor(`examen-fisico-${id_cita}`) || null
+        plantilla,
+        datos_extra,
+        peso: general(`peso-${id_cita}`),
+        talla: general(`talla-${id_cita}`),
+        presion_arterial: general(`presion-${id_cita}`),
+        temperatura: general(`temperatura-${id_cita}`),
+        frecuencia_cardiaca: general(`fc-${id_cita}`),
+        frecuencia_respiratoria: general(`fr-${id_cita}`),
+        examen_fisico: general(`examen-fisico-${id_cita}`)
     };
 
     try {
@@ -776,7 +885,7 @@ async function mostrarDetalleDia(texto) {
             citas.map(c => `
                 <div class="fila-cita">
                   <div>${recortarHora(c.hora)} · ${c.paciente_nombres} ${c.paciente_apellidos}</div>
-                <span class="estado-badge estado-${c.estado}">${formatearEstado(c.estado)}</span>
+                  <span class="estado-badge estado-${c.estado}">${formatearEstado(c.estado)}</span>
                 </div>`).join('')
             : `<p>${esPasado ? 'No hubo citas ese día.' : 'No hay citas agendadas ese día.'}</p>`;
 
@@ -849,7 +958,7 @@ const inputFecha = document.getElementById('inputFechaAgenda');
 inputFecha.value = fechaATexto(new Date());
 inputFecha.addEventListener('change', cargarAgenda);
 
-cargarAgenda();
+cargarEspecialidadesDoctor().then(cargarAgenda);
 
 Notificaciones.montar({
     contenedor: document.getElementById('zonaCampana'),

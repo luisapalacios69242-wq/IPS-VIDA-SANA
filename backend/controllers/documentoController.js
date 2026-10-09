@@ -380,7 +380,7 @@ const generarPdfResumenAtencion = async (req, res) => {
 
   try {
     const [consultaRows] = await pool.query(
-      `SELECT co.fecha_consulta, co.diagnostico, co.observaciones,
+      `SELECT co.fecha_consulta, co.diagnostico, co.observaciones, co.plantilla, co.datos_extra,
               co.peso, co.talla, co.presion_arterial, co.temperatura,
               co.frecuencia_cardiaca, co.frecuencia_respiratoria, co.examen_fisico,
               up.nombres AS paciente_nombres, up.apellidos AS paciente_apellidos, up.numero_documento,
@@ -430,6 +430,27 @@ const generarPdfResumenAtencion = async (req, res) => {
         ['Doctor(a)', `Dr(a). ${co.doctor_nombres} ${co.doctor_apellidos}`]
       ]
     });
+
+        const esOdonto = co.plantilla === 'odontologia';
+
+    if (esOdonto) {
+      const extra = typeof co.datos_extra === 'string' ? JSON.parse(co.datos_extra) : (co.datos_extra || {});
+
+      dibujarTabla(doc, {
+        titulo: 'Consulta odontológica',
+        columnas: [{ titulo: 'Campo', ancho: 160 }, { titulo: 'Detalle' }],
+        filas: [
+          ['Motivo de consulta', extra.motivo_consulta || '—'],
+          ['Hallazgos orales', extra.hallazgos_orales || '—'],
+          ['Piezas tratadas (FDI)', extra.piezas_tratadas || '—'],
+          ['Higiene oral', extra.higiene_oral || '—'],
+          ['Procedimiento realizado', extra.procedimiento || '—'],
+          ['Plan de tratamiento', extra.plan_tratamiento || '—']
+        ]
+      });
+    }
+
+    if (!esOdonto) {
 
     const peso = co.peso !== null ? Number(co.peso) : null;
     const talla = co.talla !== null ? Number(co.talla) : null;

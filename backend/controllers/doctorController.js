@@ -45,16 +45,53 @@ const buscarDiagnosticos = async (req, res) => {
   }
 };
 
+const especialidadesDelDoctor = async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT e.id_especialidad, e.nombre
+       FROM doctor_especialidad de
+       JOIN especialidad e ON e.id_especialidad = de.especialidad_id
+       WHERE de.doctor_id = ?`,
+      [req.params.id_doctor]
+    );
+    return res.json(rows);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ mensaje: 'Error del servidor al consultar las especialidades.' });
+  }
+};
+
 const atenderConsulta = async (req, res) => {
   const { id_cita } = req.params;
   const {
-    diagnostico_codigo, observaciones,
+    diagnostico_codigo, observaciones, plantilla, datos_extra,
     peso, talla, presion_arterial, temperatura,
     frecuencia_cardiaca, frecuencia_respiratoria, examen_fisico
   } = req.body;
 
   if (!diagnostico_codigo) {
     return res.status(400).json({ mensaje: 'Debes seleccionar el diagnóstico (CIE-10).' });
+  }
+
+    const plantillaFinal = ['general', 'odontologia'].includes(plantilla) ? plantilla : 'general';
+  let extraJson = null;
+
+  if (plantillaFinal === 'odontologia') {
+    const e = datos_extra || {};
+    const limpio = {
+      motivo_consulta: String(e.motivo_consulta || '').trim(),
+      hallazgos_orales: String(e.hallazgos_orales || '').trim(),
+      piezas_tratadas: String(e.piezas_tratadas || '').trim(),
+      higiene_oral: String(e.higiene_oral || '').trim(),
+      procedimiento: String(e.procedimiento || '').trim(),
+      plan_tratamiento: String(e.plan_tratamiento || '').trim()
+    };
+
+    if (!limpio.motivo_consulta) {
+      return res.status(400).json({ mensaje: 'El motivo de consulta es obligatorio.' });
+    }
+
+    extraJson = JSON.stringify(limpio);
   }
 
   const conexion = await pool.getConnection();
@@ -103,11 +140,11 @@ const atenderConsulta = async (req, res) => {
 
     const [resultadoConsulta] = await conexion.query(
       `INSERT INTO consulta
-        (cita_id, historia_clinica_id, diagnostico, diagnostico_codigo, observaciones,
+        (cita_id, historia_clinica_id, diagnostico, diagnostico_codigo, plantilla, datos_extra, observaciones,
          peso, talla, presion_arterial, temperatura,
          frecuencia_cardiaca, frecuencia_respiratoria, examen_fisico)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id_cita, historiaRows[0].id_historia, diagnostico, diagnostico_codigo, observaciones || null,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id_cita, historiaRows[0].id_historia, diagnostico, diagnostico_codigo, plantillaFinal, extraJson, observaciones || null,
        peso || null, talla || null, presion_arterial || null, temperatura || null,
        frecuencia_cardiaca || null, frecuencia_respiratoria || null, examen_fisico || null]
     );
@@ -363,6 +400,6 @@ const generarIncapacidad = async (req, res) => {
 
 
 module.exports = {
-  agendaDelDoctor, atenderConsulta, iniciarAtencion, marcarNoAsistio, buscarDiagnosticos,
+  agendaDelDoctor, atenderConsulta, iniciarAtencion, especialidadesDelDoctor, buscarDiagnosticos, marcarNoAsistio,
   listarMedicamentos, listarTiposExamen, generarFormula, generarOrdenExamen, generarIncapacidad
 };
