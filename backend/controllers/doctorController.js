@@ -26,16 +26,35 @@ const agendaDelDoctor = async (req, res) => {
   }
 };
 
+const buscarDiagnosticos = async (req, res) => {
+  const q = (req.query.q || '').trim();
+  if (q.length < 2) return res.json([]);
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT codigo, descripcion FROM diagnostico_cie10
+       WHERE codigo LIKE ? OR descripcion LIKE ?
+       ORDER BY (codigo LIKE ?) DESC, codigo
+       LIMIT 15`,
+      [`${q}%`, `%${q}%`, `${q}%`]
+    );
+    return res.json(rows);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ mensaje: 'Error del servidor al buscar diagnósticos.' });
+  }
+};
+
 const atenderConsulta = async (req, res) => {
   const { id_cita } = req.params;
   const {
-    diagnostico, observaciones,
+    diagnostico_codigo, observaciones,
     peso, talla, presion_arterial, temperatura,
     frecuencia_cardiaca, frecuencia_respiratoria, examen_fisico
   } = req.body;
 
-  if (!diagnostico) {
-    return res.status(400).json({ mensaje: 'El diagnóstico es obligatorio.' });
+  if (!diagnostico_codigo) {
+    return res.status(400).json({ mensaje: 'Debes seleccionar el diagnóstico (CIE-10).' });
   }
 
   const conexion = await pool.getConnection();
@@ -58,6 +77,18 @@ const atenderConsulta = async (req, res) => {
       });
     }
 
+    const [dxRows] = await conexion.query(
+      'SELECT codigo, descripcion FROM diagnostico_cie10 WHERE codigo = ?',
+      [diagnostico_codigo]
+    );
+
+    if (dxRows.length === 0) {
+      conexion.release();
+      return res.status(400).json({ mensaje: 'El diagnóstico seleccionado no existe en el catálogo CIE-10.' });
+    }
+
+    const diagnostico = `${dxRows[0].codigo} - ${dxRows[0].descripcion}`;
+
     const [historiaRows] = await conexion.query(
       'SELECT id_historia FROM historia_clinica WHERE paciente_id = ?',
       [citaRows[0].paciente_id]
@@ -72,13 +103,13 @@ const atenderConsulta = async (req, res) => {
 
     const [resultadoConsulta] = await conexion.query(
       `INSERT INTO consulta
-        (cita_id, historia_clinica_id, diagnostico, observaciones,
+        (cita_id, historia_clinica_id, diagnostico, diagnostico_codigo, observaciones,
          peso, talla, presion_arterial, temperatura,
          frecuencia_cardiaca, frecuencia_respiratoria, examen_fisico)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id_cita, historiaRows[0].id_historia, diagnostico, observaciones || null,
-        peso || null, talla || null, presion_arterial || null, temperatura || null,
-        frecuencia_cardiaca || null, frecuencia_respiratoria || null, examen_fisico || null]
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id_cita, historiaRows[0].id_historia, diagnostico, diagnostico_codigo, observaciones || null,
+       peso || null, talla || null, presion_arterial || null, temperatura || null,
+       frecuencia_cardiaca || null, frecuencia_respiratoria || null, examen_fisico || null]
     );
 
     await conexion.query(
@@ -332,6 +363,6 @@ const generarIncapacidad = async (req, res) => {
 
 
 module.exports = {
-  agendaDelDoctor, atenderConsulta, iniciarAtencion, marcarNoAsistio,
+  agendaDelDoctor, atenderConsulta, iniciarAtencion, marcarNoAsistio, buscarDiagnosticos,
   listarMedicamentos, listarTiposExamen, generarFormula, generarOrdenExamen, generarIncapacidad
 };

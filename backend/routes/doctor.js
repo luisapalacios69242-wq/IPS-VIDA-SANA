@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const {
-  agendaDelDoctor, atenderConsulta, iniciarAtencion, marcarNoAsistio,
+  agendaDelDoctor, atenderConsulta, iniciarAtencion, marcarNoAsistio, buscarDiagnosticos,
   listarMedicamentos, listarTiposExamen, generarFormula, generarOrdenExamen, generarIncapacidad
 } = require('../controllers/doctorController');
 
 router.get('/:id_doctor/agenda', agendaDelDoctor);
+router.get('/diagnosticos', buscarDiagnosticos);
 router.post('/citas/:id_cita/atender', atenderConsulta);
 router.put('/citas/:id_cita/iniciar', iniciarAtencion);
 router.put('/citas/:id_cita/no-asistio', marcarNoAsistio);

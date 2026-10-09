@@ -429,3 +429,9 @@ html[data-theme="dark"] .cat-aviso.exito { background: #0f3a2e; color: #7fd8b8; 
 html[data-theme="dark"] .estado-badge.estado-en_espera { background: #78350f; color: #fde68a; }
 html[data-theme="dark"] .estado-badge.estado-en_atencion { background: #1e3a8a; color: #bfdbfe; }
 html[data-theme="dark"] .estado-badge.estado-atendida { background: #14532d; color: #bbf7d0; }
+
+html[data-theme="dark"] .dx-lista { background: #1e293b; border-color: #334155; }
+html[data-theme="dark"] .dx-opcion { color: #e2e8f0; }
+html[data-theme="dark"] .dx-opcion:hover { background: #334155; }
+html[data-theme="dark"] .dx-opcion strong { color: #7fb4e8; }
+html[data-theme="dark"] .dx-vacio { color: #94a3b8; }

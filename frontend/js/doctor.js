@@ -172,8 +172,15 @@ async function cargarAgenda() {
 
             <details open>
               <summary>Diagnóstico</summary>
-              <label>Diagnóstico</label>
-              <textarea id="diagnostico-${c.id_cita}" rows="2" placeholder="Diagnóstico de la consulta"></textarea>
+                            <label>Diagnóstico (CIE-10) *</label>
+              <div class="dx-buscador">
+                <input type="text" id="dx-buscar-${c.id_cita}" autocomplete="off"
+                       placeholder="Busca por código o nombre (ej. J00, hipertensión, gripe)"
+                       oninput="buscarDiagnostico(${c.id_cita})">
+                <div id="dx-lista-${c.id_cita}" class="dx-lista oculto"></div>
+              </div>
+              <input type="hidden" id="diagnostico-codigo-${c.id_cita}">
+              <p id="dx-elegido-${c.id_cita}" class="dx-elegido"></p>
               <label>Observaciones</label>
               <textarea id="observaciones-${c.id_cita}" rows="2" placeholder="Observaciones (opcional)"></textarea>
               <button onclick="atenderConsulta(${c.id_cita})">Guardar atención</button>
@@ -221,6 +228,62 @@ async function cargarDatosDelPaciente(id_cita, id_paciente) {
     }
 }
 
+// ---------- Buscador de diagnósticos CIE-10 ----------
+const temporizadorDx = {};
+
+function buscarDiagnostico(id_cita) {
+    const entrada = document.getElementById(`dx-buscar-${id_cita}`);
+    const lista = document.getElementById(`dx-lista-${id_cita}`);
+
+    // Si el doctor vuelve a escribir, se invalida la selección anterior.
+    document.getElementById(`diagnostico-codigo-${id_cita}`).value = '';
+    document.getElementById(`dx-elegido-${id_cita}`).textContent = '';
+
+    clearTimeout(temporizadorDx[id_cita]);
+    const texto = entrada.value.trim();
+
+    if (texto.length < 2) {
+        lista.classList.add('oculto');
+        return;
+    }
+
+    temporizadorDx[id_cita] = setTimeout(async () => {
+        try {
+            const respuesta = await fetch(`${API}/api/doctor/diagnosticos?q=${encodeURIComponent(texto)}`);
+            const resultados = await respuesta.json();
+
+            lista.innerHTML = resultados.length
+                ? resultados.map(r => `
+                    <button type="button" class="dx-opcion"
+                            data-cita="${id_cita}" data-codigo="${r.codigo}" data-desc="${r.descripcion}">
+                      <strong>${r.codigo}</strong> ${r.descripcion}
+                    </button>`).join('')
+                : '<div class="dx-vacio">Sin resultados en el catálogo.</div>';
+
+            lista.classList.remove('oculto');
+        } catch (error) {
+            console.error(error);
+        }
+    }, 250);
+}
+
+document.addEventListener('click', (e) => {
+    const opcion = e.target.closest('.dx-opcion');
+
+    if (opcion) {
+        const id_cita = opcion.dataset.cita;
+        document.getElementById(`diagnostico-codigo-${id_cita}`).value = opcion.dataset.codigo;
+        document.getElementById(`dx-buscar-${id_cita}`).value = `${opcion.dataset.codigo} - ${opcion.dataset.desc}`;
+        document.getElementById(`dx-elegido-${id_cita}`).textContent = `Seleccionado: ${opcion.dataset.codigo}`;
+        document.getElementById(`dx-lista-${id_cita}`).classList.add('oculto');
+        return;
+    }
+
+    if (!e.target.closest('.dx-buscador')) {
+        document.querySelectorAll('.dx-lista').forEach(l => l.classList.add('oculto'));
+    }
+});
+
 async function atenderConsulta(id_cita) {
     const contexto = contextoCita[id_cita];
 
@@ -232,7 +295,7 @@ async function atenderConsulta(id_cita) {
     const prefijo = `doc-${id_cita}`;
     const valor = (id) => document.getElementById(id).value.trim();
 
-    const diagnostico = valor(`diagnostico-${id_cita}`);
+    const diagnostico_codigo = valor(`diagnostico-codigo-${id_cita}`);
     const observaciones = valor(`observaciones-${id_cita}`);
     const historia = leerHistoria(prefijo);
 
@@ -241,8 +304,8 @@ async function atenderConsulta(id_cita) {
         return;
     }
 
-    if (!diagnostico) {
-        alert('El diagnóstico es obligatorio.');
+    if (!diagnostico_codigo) {
+        alert('Selecciona el diagnóstico de la lista (CIE-10).');
         return;
     }
 
