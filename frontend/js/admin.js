@@ -680,10 +680,155 @@ document.getElementById('btnCrearBloqueo').addEventListener('click', async () =>
 
 // ---------- Gestionar usuarios ----------
 let especialidadesDisponibles = [];
+let usuariosGestion = [];
+let paginaGestion = 1;
+const POR_PAGINA_GESTION = 10;
+
+const escUsr = (t) => String(t ?? '').replace(/[&<>"']/g, c => (
+  { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+));
+
+// Para buscar sin importar mayúsculas ni tildes
+const normalizarTexto = (t) =>
+  String(t ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+function numerosPaginaGestion(actual, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const set = new Set([1, total, actual - 1, actual, actual + 1]);
+  const nums = [...set].filter(n => n >= 1 && n <= total).sort((a, b) => a - b);
+  const resultado = [];
+  nums.forEach((n, i) => {
+    if (i > 0 && n - nums[i - 1] > 1) resultado.push('...');
+    resultado.push(n);
+  });
+  return resultado;
+}
+
+function prepararFiltrosGestion(contenedor) {
+  if (document.getElementById('gestLista')) return;
+
+  contenedor.innerHTML = `
+    <div class="tarjeta registros-filtros">
+      <div class="registros-fila">
+        <input type="text" id="gestBuscar" placeholder="Buscar por nombre, documento o correo">
+        <select id="gestRol">
+          <option value="">Doctores y secretarias</option>
+          <option value="doctor">Solo doctores</option>
+          <option value="secretaria">Solo secretarias</option>
+        </select>
+        <button type="button" id="gestBtnBuscar">Buscar</button>
+      </div>
+    </div>
+    <div id="gestLista"></div>
+  `;
+
+  const aplicarFiltros = () => {
+    paginaGestion = 1;
+    dibujarUsuarios();
+  };
+
+  document.getElementById('gestBuscar').addEventListener('input', aplicarFiltros);
+  document.getElementById('gestRol').addEventListener('change', aplicarFiltros);
+  document.getElementById('gestBtnBuscar').addEventListener('click', aplicarFiltros);
+
+  document.getElementById('gestLista').addEventListener('click', (evento) => {
+    const botonPagina = evento.target.closest('.reg-pag-btn');
+    if (botonPagina && !botonPagina.disabled) {
+      paginaGestion = Number(botonPagina.dataset.pagina);
+      dibujarUsuarios();
+      contenedor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
+    const botonEditar = evento.target.closest('.btn-editar-usuario');
+    if (botonEditar) {
+      const usuarioData = usuariosGestion.find(u => u.id_usuario == botonEditar.dataset.id);
+      if (usuarioData) mostrarFormularioEdicion(usuarioData);
+    }
+  });
+}
+
+function dibujarUsuarios() {
+  const lista = document.getElementById('gestLista');
+  const texto = normalizarTexto(document.getElementById('gestBuscar').value.trim());
+  const rol = document.getElementById('gestRol').value;
+
+  const filtrados = usuariosGestion.filter(u => {
+    if (rol && u.rol !== rol) return false;
+    if (!texto) return true;
+    const pajar = normalizarTexto(`${u.nombres} ${u.apellidos} ${u.numero_documento} ${u.correo}`);
+    return pajar.includes(texto);
+  });
+
+  if (filtrados.length === 0) {
+    lista.innerHTML = '<p class="reg-vacio">No se encontraron usuarios.</p>';
+    return;
+  }
+
+  const total = filtrados.length;
+  const paginas = Math.ceil(total / POR_PAGINA_GESTION);
+  if (paginaGestion > paginas) paginaGestion = paginas;
+  const inicio = (paginaGestion - 1) * POR_PAGINA_GESTION;
+  const visibles = filtrados.slice(inicio, inicio + POR_PAGINA_GESTION);
+
+  const iniciales = (u) =>
+    (((u.nombres || '').trim()[0] || '') + ((u.apellidos || '').trim()[0] || '')).toUpperCase() || '?';
+
+  const itemsHtml = visibles.map(u => `
+    <article class="reg-item gest-item">
+      <div class="reg-avatar reg-av-${escUsr(u.rol)}">${escUsr(iniciales(u))}</div>
+
+      <div class="reg-info">
+        <div class="reg-nombre">
+          ${escUsr(u.nombres)} ${escUsr(u.apellidos)}
+          <span class="reg-rol-chip reg-rol-${escUsr(u.rol)}">${u.rol === 'doctor' ? 'Doctor' : 'Secretaria'}</span>
+          <span class="reg-etiqueta ${u.estado === 'activo' ? 'reg-ok' : 'reg-inactivo'}">${escUsr(u.estado)}</span>
+        </div>
+        <div class="reg-datos">
+          <span><b>Documento</b> ${escUsr(u.numero_documento)}</span>
+          <span><b>Correo</b> ${escUsr(u.correo) || '—'}</span>
+          <span><b>Teléfono</b> ${escUsr(u.telefono) || '—'}</span>
+        </div>
+      </div>
+
+      <div class="reg-acciones">
+        <button type="button" class="btn-editar-usuario reg-btn-doc" data-id="${u.id_usuario}">Editar</button>
+      </div>
+
+      <div id="edicion-${u.id_usuario}" class="gest-edicion"></div>
+    </article>
+  `).join('');
+
+  let paginacionHtml = '';
+  if (paginas > 1) {
+    const numeros = numerosPaginaGestion(paginaGestion, paginas).map(n =>
+      n === '...'
+        ? '<span class="reg-pag-puntos">…</span>'
+        : `<button type="button" class="reg-pag-btn ${n === paginaGestion ? 'activa' : ''}" data-pagina="${n}">${n}</button>`
+    ).join('');
+
+    paginacionHtml = `
+      <nav class="reg-paginacion">
+        <button type="button" class="reg-pag-btn" data-pagina="${paginaGestion - 1}" ${paginaGestion === 1 ? 'disabled' : ''}>‹ Anterior</button>
+        ${numeros}
+        <button type="button" class="reg-pag-btn" data-pagina="${paginaGestion + 1}" ${paginaGestion === paginas ? 'disabled' : ''}>Siguiente ›</button>
+      </nav>
+    `;
+  }
+
+  lista.innerHTML = `
+    <p class="reg-contador">Mostrando ${inicio + 1}–${inicio + visibles.length} de ${total} usuario(s)</p>
+    <div class="reg-lista-items">${itemsHtml}</div>
+    ${paginacionHtml}
+  `;
+}
 
 async function cargarUsuarios() {
   const contenedor = document.getElementById('listaUsuarios');
-  contenedor.textContent = 'Cargando...';
+  prepararFiltrosGestion(contenedor);
+  const lista = document.getElementById('gestLista');
+
+  if (usuariosGestion.length === 0) lista.innerHTML = '<p class="reg-vacio">Cargando...</p>';
 
   try {
     const [usuarios, especialidades] = await Promise.all([
@@ -692,28 +837,11 @@ async function cargarUsuarios() {
     ]);
 
     especialidadesDisponibles = especialidades.filter(e => e.estado === 'activa');
-
-    contenedor.innerHTML = usuarios.map(u => `
-      <div class="tarjeta" style="max-width:600px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <strong>${u.nombres} ${u.apellidos}</strong> — ${u.rol === 'doctor' ? 'Doctor' : 'Secretaria'}<br>
-            <span style="font-size:0.8rem; color:#5f5e5a;">${u.numero_documento} · ${u.correo}</span>
-          </div>
-          <span class="estado-badge">${u.estado}</span>
-        </div>
-        <button class="btn-editar-usuario" data-id="${u.id_usuario}" style="margin-top:8px; background:#fff; color:#185fa5; border:1px solid #185fa5;">Editar</button>
-        <div id="edicion-${u.id_usuario}"></div>
-      </div>
-    `).join('');
-
-    document.querySelectorAll('.btn-editar-usuario').forEach(boton => {
-      const usuarioData = usuarios.find(u => u.id_usuario == boton.dataset.id);
-      boton.addEventListener('click', () => mostrarFormularioEdicion(usuarioData));
-    });
+    usuariosGestion = Array.isArray(usuarios) ? usuarios : [];
+    dibujarUsuarios();
 
   } catch (error) {
-    contenedor.textContent = 'No se pudieron cargar los usuarios.';
+    lista.innerHTML = '<p class="reg-vacio">No se pudieron cargar los usuarios.</p>';
     console.error(error);
   }
 }

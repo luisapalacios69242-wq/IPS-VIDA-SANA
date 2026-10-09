@@ -1142,3 +1142,8 @@ select[disabled] {
   .reg-item { grid-template-columns: 44px 1fr; }
   .reg-acciones { grid-column: 1 / -1; flex-direction: row; min-width: 0; }
 }
+
+/* ---------- Gestionar usuarios (reutiliza las tarjetas de Registros) ---------- */
+.gest-edicion { grid-column: 1 / -1; }
+.gest-edicion:empty { display: none; }
+.gest-item .reg-acciones { min-width: 120px; }
