@@ -431,8 +431,6 @@ const generarPdfResumenAtencion = async (req, res) => {
       ]
     });
 
-
-
     const esOdonto = co.plantilla === 'odontologia';
 
     if (esOdonto) {
@@ -486,12 +484,42 @@ const generarPdfResumenAtencion = async (req, res) => {
       }
     }
 
-    const generarPdfFactura = async (req, res) => {
-      const { id_factura } = req.params;
+    dibujarTabla(doc, {
+      titulo: 'Diagnóstico',
+      columnas: [{ titulo: 'Campo', ancho: 160 }, { titulo: 'Detalle' }],
+      filas: [
+        ['Diagnóstico', co.diagnostico],
+        ['Observaciones', co.observaciones || '—']
+      ]
+    });
 
-      try {
-        const [rows] = await pool.query(
-          `SELECT f.numero_factura, f.fecha, f.valor, f.forma_pago, f.estado,
+    dibujarTabla(doc, {
+      titulo: 'Ayudas diagnósticas',
+      columnas: [
+        { titulo: 'Examen', ancho: 200 },
+        { titulo: 'Observaciones' }
+      ],
+      filas: examenesRows.length
+        ? examenesRows.map(e => [e.tipo_examen, e.observaciones || '—'])
+        : [['No se ordenaron exámenes en esta consulta.', '—']]
+    });
+
+    doc.end();
+
+  } catch (error) {
+    console.error(error);
+    if (!res.headersSent) {
+      res.status(500).json({ mensaje: 'Error del servidor al generar el PDF.' });
+    }
+  }
+};
+
+const generarPdfFactura = async (req, res) => {
+  const { id_factura } = req.params;
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT f.numero_factura, f.fecha, f.valor, f.forma_pago, f.estado,
               s.nombre AS servicio_nombre,
               up.nombres AS paciente_nombres, up.apellidos AS paciente_apellidos, up.numero_documento,
               ud.nombres AS doctor_nombres, ud.apellidos AS doctor_apellidos,
@@ -507,59 +535,59 @@ const generarPdfResumenAtencion = async (req, res) => {
        JOIN secretaria se ON se.id_secretaria = f.secretaria_id
        JOIN usuario us ON us.id_usuario = se.usuario_id
        WHERE f.id_factura = ?`,
-          [id_factura]
-        );
+      [id_factura]
+    );
 
-        if (rows.length === 0) {
-          return res.status(404).json({ mensaje: 'Factura no encontrada.' });
-        }
+    if (rows.length === 0) {
+      return res.status(404).json({ mensaje: 'Factura no encontrada.' });
+    }
 
-        const f = rows[0];
+    const f = rows[0];
 
-        const doc = new PDFDocument({ margin: 50 });
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename=${f.numero_factura}.pdf`);
-        doc.pipe(res);
+    const doc = new PDFDocument({ margin: 50 });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=${f.numero_factura}.pdf`);
+    doc.pipe(res);
 
-        encabezado(doc);
-        doc.fontSize(15).fillColor('#000').text('Factura de Servicios');
-        doc.moveDown(0.3);
-        doc.fontSize(9).fillColor('#5f5e5a').text('Documento sin validez fiscal (no constituye factura electrónica DIAN). Uso interno del consultorio.');
-        doc.moveDown(0.7);
-        doc.fontSize(11).fillColor('#000');
-        doc.text(`Número: ${f.numero_factura}`);
-        doc.text(`Fecha: ${f.fecha}`);
-        doc.moveDown();
-        doc.text(`Paciente: ${f.paciente_nombres} ${f.paciente_apellidos}`);
-        doc.text(`Documento: ${f.numero_documento}`);
-        doc.text(`Atendido por: Dr(a). ${f.doctor_nombres} ${f.doctor_apellidos}`);
-        doc.moveDown();
-        doc.fontSize(12).text('Detalle', { underline: true });
-        doc.fontSize(11);
-        doc.text(`Servicio: ${f.servicio_nombre}`);
-        doc.text(`Valor: $${Number(f.valor).toLocaleString('es-CO')}`);
-        doc.moveDown();
-        doc.text(`Estado: ${f.estado === 'pagada' ? 'Pagada' : 'Pendiente de pago'}`);
-        doc.text(`Forma de pago: ${f.forma_pago || 'No registrada'}`);
-        doc.moveDown();
-        doc.fontSize(9).fillColor('#5f5e5a').text(`Generada por: ${f.secretaria_nombres} ${f.secretaria_apellidos}`);
+    encabezado(doc);
+    doc.fontSize(15).fillColor('#000').text('Factura de Servicios');
+    doc.moveDown(0.3);
+    doc.fontSize(9).fillColor('#5f5e5a').text('Documento sin validez fiscal (no constituye factura electrónica DIAN). Uso interno del consultorio.');
+    doc.moveDown(0.7);
+    doc.fontSize(11).fillColor('#000');
+    doc.text(`Número: ${f.numero_factura}`);
+    doc.text(`Fecha: ${f.fecha}`);
+    doc.moveDown();
+    doc.text(`Paciente: ${f.paciente_nombres} ${f.paciente_apellidos}`);
+    doc.text(`Documento: ${f.numero_documento}`);
+    doc.text(`Atendido por: Dr(a). ${f.doctor_nombres} ${f.doctor_apellidos}`);
+    doc.moveDown();
+    doc.fontSize(12).text('Detalle', { underline: true });
+    doc.fontSize(11);
+    doc.text(`Servicio: ${f.servicio_nombre}`);
+    doc.text(`Valor: $${Number(f.valor).toLocaleString('es-CO')}`);
+    doc.moveDown();
+    doc.text(`Estado: ${f.estado === 'pagada' ? 'Pagada' : 'Pendiente de pago'}`);
+    doc.text(`Forma de pago: ${f.forma_pago || 'No registrada'}`);
+    doc.moveDown();
+    doc.fontSize(9).fillColor('#5f5e5a').text(`Generada por: ${f.secretaria_nombres} ${f.secretaria_apellidos}`);
 
-        doc.end();
+    doc.end();
 
-      } catch (error) {
-        console.error(error);
-        if (!res.headersSent) {
-          res.status(500).json({ mensaje: 'Error del servidor al generar el PDF.' });
-        }
-      }
-    };
+  } catch (error) {
+    console.error(error);
+    if (!res.headersSent) {
+      res.status(500).json({ mensaje: 'Error del servidor al generar el PDF.' });
+    }
+  }
+};
 
-    const generarPdfIncapacidad = async (req, res) => {
-      const { id_incapacidad } = req.params;
+const generarPdfIncapacidad = async (req, res) => {
+  const { id_incapacidad } = req.params;
 
-      try {
-        const [rows] = await pool.query(
-          `SELECT im.fecha_inicio, im.fecha_fin, im.dias_incapacidad, im.motivo,
+  try {
+    const [rows] = await pool.query(
+      `SELECT im.fecha_inicio, im.fecha_fin, im.dias_incapacidad, im.motivo,
               up.nombres AS paciente_nombres, up.apellidos AS paciente_apellidos, up.numero_documento,
               ud.nombres AS doctor_nombres, ud.apellidos AS doctor_apellidos, d.tarjeta_profesional
        FROM incapacidad_medica im
@@ -570,59 +598,59 @@ const generarPdfResumenAtencion = async (req, res) => {
        JOIN doctor d ON d.id_doctor = c.doctor_id
        JOIN usuario ud ON ud.id_usuario = d.usuario_id
        WHERE im.id_incapacidad = ?`,
-          [id_incapacidad]
-        );
+      [id_incapacidad]
+    );
 
-        if (rows.length === 0) {
-          return res.status(404).json({ mensaje: 'Incapacidad médica no encontrada.' });
-        }
+    if (rows.length === 0) {
+      return res.status(404).json({ mensaje: 'Incapacidad médica no encontrada.' });
+    }
 
-        const i = rows[0];
+    const i = rows[0];
 
-        const doc = new PDFDocument({ margin: 50, size: 'A4' });
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename=incapacidad-medica-${id_incapacidad}.pdf`);
-        doc.pipe(res);
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=incapacidad-medica-${id_incapacidad}.pdf`);
+    doc.pipe(res);
 
-        encabezado(doc);
-        doc.font('Helvetica-Bold').fontSize(15).fillColor('#000').text('Incapacidad Médica');
-        doc.font('Helvetica');
-        doc.moveDown(0.6);
+    encabezado(doc);
+    doc.font('Helvetica-Bold').fontSize(15).fillColor('#000').text('Incapacidad Médica');
+    doc.font('Helvetica');
+    doc.moveDown(0.6);
 
-        dibujarTabla(doc, {
-          titulo: 'Datos del paciente',
-          columnas: [{ titulo: 'Campo', ancho: 160 }, { titulo: 'Detalle' }],
-          filas: [
-            ['Paciente', `${i.paciente_nombres} ${i.paciente_apellidos}`],
-            ['Documento', i.numero_documento]
-          ]
-        });
+    dibujarTabla(doc, {
+      titulo: 'Datos del paciente',
+      columnas: [{ titulo: 'Campo', ancho: 160 }, { titulo: 'Detalle' }],
+      filas: [
+        ['Paciente', `${i.paciente_nombres} ${i.paciente_apellidos}`],
+        ['Documento', i.numero_documento]
+      ]
+    });
 
-        dibujarTabla(doc, {
-          titulo: 'Detalle de la incapacidad',
-          columnas: [{ titulo: 'Campo', ancho: 160 }, { titulo: 'Detalle' }],
-          filas: [
-            ['Fecha de inicio', i.fecha_inicio],
-            ['Fecha de finalización', i.fecha_fin],
-            ['Días de incapacidad', String(i.dias_incapacidad)],
-            ['Motivo', i.motivo]
-          ]
-        });
+    dibujarTabla(doc, {
+      titulo: 'Detalle de la incapacidad',
+      columnas: [{ titulo: 'Campo', ancho: 160 }, { titulo: 'Detalle' }],
+      filas: [
+        ['Fecha de inicio', i.fecha_inicio],
+        ['Fecha de finalización', i.fecha_fin],
+        ['Días de incapacidad', String(i.dias_incapacidad)],
+        ['Motivo', i.motivo]
+      ]
+    });
 
-        doc.fontSize(9).fillColor('#333333')
-          .text(`Expedida por: Dr(a). ${i.doctor_nombres} ${i.doctor_apellidos} — T.P. ${i.tarjeta_profesional}`);
+    doc.fontSize(9).fillColor('#333333')
+      .text(`Expedida por: Dr(a). ${i.doctor_nombres} ${i.doctor_apellidos} — T.P. ${i.tarjeta_profesional}`);
 
-        doc.end();
+    doc.end();
 
-      } catch (error) {
-        console.error(error);
-        if (!res.headersSent) {
-          res.status(500).json({ mensaje: 'Error del servidor al generar el PDF.' });
-        }
-      }
-    };
+  } catch (error) {
+    console.error(error);
+    if (!res.headersSent) {
+      res.status(500).json({ mensaje: 'Error del servidor al generar el PDF.' });
+    }
+  }
+};
 
-    module.exports = {
-      generarPdfHistoriaClinica, generarPdfOrdenExamen, generarPdfFormula, generarPdfResumenAtencion,
-      generarPdfFactura, generarPdfIncapacidad
-    };
+module.exports = {
+  generarPdfHistoriaClinica, generarPdfOrdenExamen, generarPdfFormula, generarPdfResumenAtencion,
+  generarPdfFactura, generarPdfIncapacidad
+};
