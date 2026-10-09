@@ -1,13 +1,32 @@
-// Pantalla "Registros de usuarios": búsqueda, restablecer contraseña y corregir documento.
+// Pantalla "Registros de usuarios": búsqueda, paginación, restablecer contraseña y corregir documento.
 // Uso: Registros.montar({ contenedor, base: '/api/admin/registros', conRol: true })
 const Registros = (() => {
   const API_BASE = 'https://ips-vida-sana-production.up.railway.app';
+  const POR_PAGINA = 10;
+
+  const ETIQUETA_ROL = { paciente: 'Paciente', doctor: 'Doctor', secretaria: 'Secretaria' };
 
   const esc = (t) => String(t ?? '').replace(/[&<>"']/g, c => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
   ));
 
   const formatearFecha = (f) => (f ? String(f).slice(0, 10) : '—');
+
+  const iniciales = (nombres, apellidos) =>
+    (((nombres || '').trim()[0] || '') + ((apellidos || '').trim()[0] || '')).toUpperCase() || '?';
+
+  // Genera la lista de páginas a mostrar: 1 ... 4 5 6 ... 12
+  function numerosPagina(actual, total) {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const set = new Set([1, total, actual - 1, actual, actual + 1]);
+    const nums = [...set].filter(n => n >= 1 && n <= total).sort((a, b) => a - b);
+    const resultado = [];
+    nums.forEach((n, i) => {
+      if (i > 0 && n - nums[i - 1] > 1) resultado.push('...');
+      resultado.push(n);
+    });
+    return resultado;
+  }
 
   function montar({ contenedor, base, conRol }) {
     contenedor.innerHTML = `
@@ -33,13 +52,86 @@ const Registros = (() => {
     const mensaje = contenedor.querySelector('.reg-mensaje');
     const lista = contenedor.querySelector('.reg-lista');
 
+    let todos = [];
+    let pagina = 1;
+
     const avisar = (texto, ok = false) => {
       mensaje.textContent = texto || '';
       mensaje.className = `reg-mensaje ${ok ? 'exito' : 'error'}`;
     };
 
-    async function cargar() {
-      lista.textContent = 'Cargando...';
+    function dibujar() {
+      if (todos.length === 0) {
+        lista.innerHTML = '<p class="reg-vacio">No se encontraron usuarios.</p>';
+        return;
+      }
+
+      const total = todos.length;
+      const paginas = Math.ceil(total / POR_PAGINA);
+      if (pagina > paginas) pagina = paginas;
+      const inicio = (pagina - 1) * POR_PAGINA;
+      const visibles = todos.slice(inicio, inicio + POR_PAGINA);
+
+      const itemsHtml = visibles.map(u => `
+        <article class="reg-item" data-id="${u.id_usuario}" data-tipo="${esc(u.tipo_documento)}" data-doc="${esc(u.numero_documento)}" data-nombre="${esc(u.nombres + ' ' + u.apellidos)}">
+          <div class="reg-avatar reg-av-${esc(u.rol)}">${esc(iniciales(u.nombres, u.apellidos))}</div>
+
+          <div class="reg-info">
+            <div class="reg-nombre">
+              ${esc(u.nombres)} ${esc(u.apellidos)}
+              ${conRol ? `<span class="reg-rol-chip reg-rol-${esc(u.rol)}">${esc(ETIQUETA_ROL[u.rol] || u.rol)}</span>` : ''}
+              ${u.estado && u.estado !== 'activo' ? `<span class="reg-rol-chip reg-inactivo">${esc(u.estado)}</span>` : ''}
+            </div>
+            <div class="reg-datos">
+              <span><b>Documento</b> ${esc(u.tipo_documento)} ${esc(u.numero_documento)}</span>
+              <span><b>Correo</b> ${esc(u.correo) || '—'}</span>
+              <span><b>Teléfono</b> ${esc(u.telefono) || '—'}</span>
+            </div>
+            <div class="reg-meta">
+              Registrado el ${formatearFecha(u.fecha_registro)}
+              ${u.contrasena_temporal
+                ? '<span class="reg-etiqueta reg-pendiente">Contraseña inicial (sin cambiar)</span>'
+                : '<span class="reg-etiqueta reg-ok">Contraseña personalizada</span>'}
+            </div>
+          </div>
+
+          <div class="reg-acciones">
+            <button type="button" class="reg-btn-doc">Corregir documento</button>
+            <button type="button" class="reg-btn-reset">Restablecer contraseña</button>
+          </div>
+        </article>
+      `).join('');
+
+      let paginacionHtml = '';
+      if (paginas > 1) {
+        const numeros = numerosPagina(pagina, paginas).map(n =>
+          n === '...'
+            ? '<span class="reg-pag-puntos">…</span>'
+            : `<button type="button" class="reg-pag-btn ${n === pagina ? 'activa' : ''}" data-pagina="${n}">${n}</button>`
+        ).join('');
+
+        paginacionHtml = `
+          <nav class="reg-paginacion">
+            <button type="button" class="reg-pag-btn" data-pagina="${pagina - 1}" ${pagina === 1 ? 'disabled' : ''}>‹ Anterior</button>
+            ${numeros}
+            <button type="button" class="reg-pag-btn" data-pagina="${pagina + 1}" ${pagina === paginas ? 'disabled' : ''}>Siguiente ›</button>
+          </nav>
+        `;
+      }
+
+      lista.innerHTML = `
+        <p class="reg-contador">
+          Mostrando ${inicio + 1}–${inicio + visibles.length} de ${total} usuario(s)
+          ${total === 100 ? '<br><small>(se muestran como máximo los 100 más recientes; afina la búsqueda)</small>' : ''}
+        </p>
+        <div class="reg-lista-items">${itemsHtml}</div>
+        ${paginacionHtml}
+      `;
+    }
+
+    async function cargar(conservarPagina = false) {
+      if (!conservarPagina) pagina = 1;
+      lista.innerHTML = '<p class="reg-vacio">Cargando...</p>';
       const params = new URLSearchParams({ q: inputBuscar.value });
       if (selRol && selRol.value) params.set('rol', selRol.value);
 
@@ -48,50 +140,14 @@ const Registros = (() => {
         const datos = await respuesta.json();
 
         if (!respuesta.ok) {
-          lista.textContent = datos.mensaje || 'No se pudieron cargar los registros.';
+          lista.innerHTML = `<p class="reg-vacio">${esc(datos.mensaje || 'No se pudieron cargar los registros.')}</p>`;
           return;
         }
-        if (datos.length === 0) {
-          lista.textContent = 'No se encontraron usuarios.';
-          return;
-        }
-
-        lista.innerHTML = `
-          <p class="reg-contador">${datos.length} resultado(s)${datos.length === 100 ? ' (se muestran los 100 más recientes; afina la búsqueda)' : ''}</p>
-          <div class="reg-tabla-envoltura">
-          <table class="reg-tabla">
-            <thead>
-              <tr>
-                ${conRol ? '<th>Rol</th>' : ''}
-                <th>Documento</th><th>Nombre</th><th>Correo</th><th>Teléfono</th>
-                <th>Registro</th><th>Contraseña</th><th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${datos.map(u => `
-                <tr data-id="${u.id_usuario}" data-tipo="${esc(u.tipo_documento)}" data-doc="${esc(u.numero_documento)}" data-nombre="${esc(u.nombres + ' ' + u.apellidos)}">
-                  ${conRol ? `<td>${esc(u.rol)}</td>` : ''}
-                  <td>${esc(u.tipo_documento)} ${esc(u.numero_documento)}</td>
-                  <td>${esc(u.nombres)} ${esc(u.apellidos)}${u.estado && u.estado !== 'activo' ? ` <em>(${esc(u.estado)})</em>` : ''}</td>
-                  <td>${esc(u.correo)}</td>
-                  <td>${esc(u.telefono) || '—'}</td>
-                  <td>${formatearFecha(u.fecha_registro)}</td>
-                  <td>${u.contrasena_temporal
-                    ? '<span class="reg-etiqueta reg-pendiente">Inicial (sin cambiar)</span>'
-                    : '<span class="reg-etiqueta reg-ok">Personalizada</span>'}</td>
-                  <td class="reg-acciones">
-                    <button type="button" class="reg-btn-doc">Corregir documento</button>
-                    <button type="button" class="reg-btn-reset">Restablecer contraseña</button>
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-          </div>
-        `;
+        todos = datos;
+        dibujar();
       } catch (error) {
         console.error(error);
-        lista.textContent = 'No se pudo conectar con el servidor.';
+        lista.innerHTML = '<p class="reg-vacio">No se pudo conectar con el servidor.</p>';
       }
     }
 
@@ -106,7 +162,17 @@ const Registros = (() => {
     }
 
     lista.addEventListener('click', async (evento) => {
-      const fila = evento.target.closest('tr[data-id]');
+      // Paginación
+      const botonPagina = evento.target.closest('.reg-pag-btn');
+      if (botonPagina && !botonPagina.disabled) {
+        pagina = Number(botonPagina.dataset.pagina);
+        dibujar();
+        contenedor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+
+      // Acciones por usuario
+      const fila = evento.target.closest('.reg-item');
       if (!fila) return;
       const id = fila.dataset.id;
       const nombre = fila.dataset.nombre;
@@ -120,7 +186,7 @@ const Registros = (() => {
         try {
           const r = await enviar(`${base}/${id}/restablecer-contrasena`);
           avisar(r.mensaje, r.ok);
-          if (r.ok) cargar();
+          if (r.ok) cargar(true);
         } catch (error) {
           avisar('No se pudo conectar con el servidor.');
         }
@@ -137,18 +203,18 @@ const Registros = (() => {
             numero_documento: nuevo.trim()
           });
           avisar(r.mensaje, r.ok);
-          if (r.ok) cargar();
+          if (r.ok) cargar(true);
         } catch (error) {
           avisar('No se pudo conectar con el servidor.');
         }
       }
     });
 
-    contenedor.querySelector('.reg-btn-buscar').addEventListener('click', cargar);
+    contenedor.querySelector('.reg-btn-buscar').addEventListener('click', () => cargar());
     inputBuscar.addEventListener('keydown', (e) => { if (e.key === 'Enter') cargar(); });
-    if (selRol) selRol.addEventListener('change', cargar);
+    if (selRol) selRol.addEventListener('change', () => cargar());
 
-    return { recargar: cargar };
+    return { recargar: () => cargar() };
   }
 
   return { montar };
