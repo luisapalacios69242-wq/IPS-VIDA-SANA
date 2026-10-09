@@ -1147,3 +1147,39 @@ select[disabled] {
 .gest-edicion { grid-column: 1 / -1; }
 .gest-edicion:empty { display: none; }
 .gest-item .reg-acciones { min-width: 120px; }
+
+
+/* ---------- Formulario de edición de usuarios ---------- */
+.gest-form { border-top: 1px solid #e5e3da; padding-top: 16px; }
+.gest-titulo {
+  margin: 20px 0 10px; font-size: 0.75rem; text-transform: uppercase;
+  letter-spacing: 0.07em; color: #185fa5;
+}
+.gest-titulo:first-child { margin-top: 0; }
+.gest-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+.gest-full { grid-column: 1 / -1; }
+.gest-campo label { display: block; font-size: 0.78rem; font-weight: 600; color: #5f5e5a; margin: 0 0 4px; }
+.gest-campo input, .gest-campo select { width: 100%; margin: 0; box-sizing: border-box; }
+.gest-campo select {
+  padding: 10px 12px; font-size: 0.95rem; border: 1px solid #d3d1c7;
+  border-radius: 8px; background: #fff; color: inherit;
+}
+
+.gest-checks { display: flex; flex-wrap: wrap; gap: 8px; }
+.gest-check {
+  display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 7px 14px;
+  border: 1px solid #c9d6e6; border-radius: 999px; background: #fff; cursor: pointer;
+  font-size: 0.85rem; font-weight: 500; color: #185fa5; transition: background 0.15s, border-color 0.15s;
+}
+.gest-check:hover { background: #f1f6fb; }
+.gest-check input { width: auto; margin: 0; accent-color: #185fa5; }
+.gest-check:has(input:checked) { background: #e6f1fb; border-color: #185fa5; }
+
+.gest-pie { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.gest-pie .error { margin: 0 auto 0 0; }
+.gest-pie button { width: auto; margin: 0; padding: 9px 22px; }
+.gest-btn-cancelar { background: #fff; color: #5f5e5a; border: 1px solid #d3d1c7; }
+
+@media (max-width: 720px) {
+  .gest-grid { grid-template-columns: 1fr; }
+}

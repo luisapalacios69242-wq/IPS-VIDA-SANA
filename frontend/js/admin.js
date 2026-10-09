@@ -849,46 +849,90 @@ async function cargarUsuarios() {
 function mostrarFormularioEdicion(u) {
   const contenedor = document.getElementById(`edicion-${u.id_usuario}`);
 
+  // Si ya está abierto, se cierra
+  if (contenedor.innerHTML.trim()) {
+    contenedor.innerHTML = '';
+    return;
+  }
+
   const idsActuales = u.especialidad_ids ? u.especialidad_ids.split(',').map(String) : [];
   const checksHtml = especialidadesDisponibles.map(e => `
-    <label style="display:flex; align-items:center; gap:6px; font-weight:normal;">
+    <label class="gest-check">
       <input type="checkbox" class="edit-chk-especialidad" value="${e.id_especialidad}" ${idsActuales.includes(String(e.id_especialidad)) ? 'checked' : ''}>
-      ${e.nombre}
+      <span>${escUsr(e.nombre)}</span>
     </label>
   `).join('');
 
+  const bloqueProfesional = u.rol === 'doctor' ? `
+      <h4 class="gest-titulo">Información profesional</h4>
+      <div class="gest-grid">
+        <div class="gest-campo">
+          <label>Tarjeta profesional</label>
+          <input type="text" id="edit-tarjeta-${u.id_usuario}" value="${escUsr(u.tarjeta_profesional)}">
+        </div>
+        <div class="gest-campo gest-full">
+          <label>Especialidades</label>
+          <div class="gest-checks">${checksHtml || '<span class="reg-vacio" style="padding:0;">No hay especialidades activas.</span>'}</div>
+        </div>
+      </div>
+  ` : `
+      <h4 class="gest-titulo">Información laboral</h4>
+      <div class="gest-grid">
+        <div class="gest-campo">
+          <label>Cargo</label>
+          <input type="text" id="edit-cargo-${u.id_usuario}" value="${escUsr(u.cargo)}">
+        </div>
+      </div>
+  `;
+
   contenedor.innerHTML = `
-    <div style="border-top:1px solid #e5e3da; margin-top:10px; padding-top:10px;">
-      <label>Nombres</label>
-      <input type="text" id="edit-nombres-${u.id_usuario}" value="${u.nombres}">
-      <label>Apellidos</label>
-      <input type="text" id="edit-apellidos-${u.id_usuario}" value="${u.apellidos}">
-      <label>Teléfono</label>
-      <input type="text" id="edit-telefono-${u.id_usuario}" value="${u.telefono || ''}">
-      <label>Correo</label>
-      <input type="email" id="edit-correo-${u.id_usuario}" value="${u.correo}">
-      <label>Ciudad</label>
-      <input type="text" id="edit-ciudad-${u.id_usuario}" value="${u.ciudad || ''}">
-      <label>Dirección</label>
-      <input type="text" id="edit-direccion-${u.id_usuario}" value="${u.direccion || ''}">
-      <label>Estado</label>
-      <select id="edit-estado-${u.id_usuario}">
-        <option value="activo" ${u.estado === 'activo' ? 'selected' : ''}>Activo</option>
-        <option value="inactivo" ${u.estado === 'inactivo' ? 'selected' : ''}>Inactivo</option>
-      </select>
+    <div class="gest-form">
+      <h4 class="gest-titulo">Datos personales</h4>
+      <div class="gest-grid">
+        <div class="gest-campo">
+          <label>Nombres</label>
+          <input type="text" id="edit-nombres-${u.id_usuario}" value="${escUsr(u.nombres)}">
+        </div>
+        <div class="gest-campo">
+          <label>Apellidos</label>
+          <input type="text" id="edit-apellidos-${u.id_usuario}" value="${escUsr(u.apellidos)}">
+        </div>
+        <div class="gest-campo">
+          <label>Estado</label>
+          <select id="edit-estado-${u.id_usuario}">
+            <option value="activo" ${u.estado === 'activo' ? 'selected' : ''}>Activo</option>
+            <option value="inactivo" ${u.estado === 'inactivo' ? 'selected' : ''}>Inactivo</option>
+          </select>
+        </div>
+      </div>
 
-      ${u.rol === 'doctor' ? `
-        <label>Tarjeta profesional</label>
-        <input type="text" id="edit-tarjeta-${u.id_usuario}" value="${u.tarjeta_profesional || ''}">
-        <label>Especialidades</label>
-        <div>${checksHtml}</div>
-      ` : `
-        <label>Cargo</label>
-        <input type="text" id="edit-cargo-${u.id_usuario}" value="${u.cargo || ''}">
-      `}
+      <h4 class="gest-titulo">Contacto</h4>
+      <div class="gest-grid">
+        <div class="gest-campo">
+          <label>Teléfono</label>
+          <input type="text" id="edit-telefono-${u.id_usuario}" value="${escUsr(u.telefono)}">
+        </div>
+        <div class="gest-campo">
+          <label>Correo</label>
+          <input type="email" id="edit-correo-${u.id_usuario}" value="${escUsr(u.correo)}">
+        </div>
+        <div class="gest-campo">
+          <label>Ciudad</label>
+          <input type="text" id="edit-ciudad-${u.id_usuario}" value="${escUsr(u.ciudad)}">
+        </div>
+        <div class="gest-campo">
+          <label>Dirección</label>
+          <input type="text" id="edit-direccion-${u.id_usuario}" value="${escUsr(u.direccion)}">
+        </div>
+      </div>
 
-      <button onclick="guardarEdicionUsuario(${u.id_usuario}, '${u.rol}')">Guardar cambios</button>
-      <p id="edit-mensaje-${u.id_usuario}" class="error"></p>
+      ${bloqueProfesional}
+
+      <div class="gest-pie">
+        <p id="edit-mensaje-${u.id_usuario}" class="error"></p>
+        <button type="button" class="gest-btn-cancelar" onclick="document.getElementById('edicion-${u.id_usuario}').innerHTML = ''">Cancelar</button>
+        <button type="button" onclick="guardarEdicionUsuario(${u.id_usuario}, '${u.rol}')">Guardar cambios</button>
+      </div>
     </div>
   `;
 }

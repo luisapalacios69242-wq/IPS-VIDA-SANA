@@ -390,3 +390,13 @@ html[data-theme="dark"] .reg-pag-btn { background: #1e293b; color: #7fb4e8; bord
 html[data-theme="dark"] .reg-pag-btn:hover:not(:disabled) { background: #24334a; }
 html[data-theme="dark"] .reg-pag-btn.activa { background: #185fa5; color: #fff; border-color: #185fa5; }
 html[data-theme="dark"] .reg-mensaje.exito { color: #7fd8b8; }
+
+/* ---------- Formulario de edición de usuarios (modo oscuro) ---------- */
+html[data-theme="dark"] .gest-form { border-top-color: #334155; }
+html[data-theme="dark"] .gest-titulo { color: #7fb4e8; }
+html[data-theme="dark"] .gest-campo label { color: #94a3b8; }
+html[data-theme="dark"] .gest-campo select { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+html[data-theme="dark"] .gest-check { background: #1e293b; border-color: #334155; color: #7fb4e8; }
+html[data-theme="dark"] .gest-check:hover { background: #24334a; }
+html[data-theme="dark"] .gest-check:has(input:checked) { background: #1b2b40; border-color: #7fb4e8; }
+html[data-theme="dark"] .gest-btn-cancelar { background: #1e293b; color: #e2e8f0; border-color: #334155; }
