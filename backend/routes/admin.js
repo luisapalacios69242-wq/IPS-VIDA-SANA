@@ -6,7 +6,7 @@ const {
   asignarHorario, eliminarHorario, crearBloqueoHorario, eliminarBloqueo, listarHorariosDoctor,
   listarServiciosAdmin, crearServicio, actualizarServicio
 } = require('../controllers/adminController');
-const { obtenerInformes } = require('../controllers/informeController');
+const { obtenerInforme } = require('../controllers/informeController');
 
 router.post('/usuarios', registrarUsuario);
 router.get('/usuarios', listarUsuarios);
@@ -28,7 +28,7 @@ router.post('/bloqueos', crearBloqueoHorario);
 router.delete('/bloqueos/:id_bloqueo', eliminarBloqueo);
 router.get('/doctores/:id_doctor/horarios', listarHorariosDoctor);
 
-router.get('/informes', obtenerInformes);
+router.get('/informes/:tipo', obtenerInforme);
 
 const registrosAdmin = require('../controllers/registroController').admin;
 router.get('/registros', registrosAdmin.listar);

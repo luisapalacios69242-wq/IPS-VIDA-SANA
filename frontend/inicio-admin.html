@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/panel.css">
     <link rel="stylesheet" href="css/tema.css">
+    <link rel="stylesheet" href="css/informes.css">
     <script src="js/tema.js"></script>
 </head>
 
@@ -217,15 +218,47 @@
             <section id="seccion-informes" class="seccion oculto">
                 <h2>Informes y análisis</h2>
 
-                <div class="tarjeta" style="max-width:420px;">
-                    <label>Desde</label>
-                    <input type="date" id="infDesde">
-                    <label>Hasta</label>
-                    <input type="date" id="infHasta">
-                    <button id="btnGenerarInforme">Generar informe</button>
+                <div class="inf-filtros">
+                    <div class="inf-presets">
+                        <button type="button" class="inf-preset" data-preset="hoy">Hoy</button>
+                        <button type="button" class="inf-preset" data-preset="7">Últimos 7 días</button>
+                        <button type="button" class="inf-preset" data-preset="30">Últimos 30 días</button>
+                        <button type="button" class="inf-preset activo" data-preset="mes">Este mes</button>
+                        <button type="button" class="inf-preset" data-preset="mes-ant">Mes anterior</button>
+                        <button type="button" class="inf-preset" data-preset="trimestre">Últimos 3 meses</button>
+                        <button type="button" class="inf-preset" data-preset="anio">Este año</button>
+                    </div>
+                    <div class="inf-campos">
+                        <div><label>Desde</label><input type="date" id="infDesde"></div>
+                        <div><label>Hasta</label><input type="date" id="infHasta"></div>
+                        <div><label>Doctor</label>
+                            <select id="infDoctor">
+                                <option value="">Todos los doctores</option>
+                            </select>
+                        </div>
+                        <div><label>Especialidad</label>
+                            <select id="infEspecialidad">
+                                <option value="">Todas las especialidades</option>
+                            </select>
+                        </div>
+                        <div class="inf-acciones">
+                            <button type="button" id="btnGenerarInforme">Aplicar</button>
+                            <button type="button" id="btnImprimirInforme" class="inf-btn-sec">Imprimir</button>
+                        </div>
+                    </div>
                     <p id="mensajeInforme" class="error"></p>
                 </div>
 
+                <div class="inf-tabs">
+                    <button type="button" class="inf-tab activo" data-informe="resumen">Resumen ejecutivo</button>
+                    <button type="button" class="inf-tab" data-informe="citas">Citas y asistencia</button>
+                    <button type="button" class="inf-tab" data-informe="financiero">Financiero</button>
+                    <button type="button" class="inf-tab" data-informe="doctores">Doctores</button>
+                    <button type="button" class="inf-tab" data-informe="morbilidad">Morbilidad CIE-10</button>
+                    <button type="button" class="inf-tab" data-informe="pacientes">Pacientes</button>
+                </div>
+
+                <div id="infImpresion" class="inf-impresion"></div>
                 <div id="resultadoInformes"></div>
             </section>
 
@@ -235,6 +268,8 @@
 
     <script src="js/registros.js"></script>
     <script src="js/admin.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="js/informes.js"></script>
 </body>
 
 </html>

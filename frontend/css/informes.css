@@ -1,0 +1,535 @@
+/* ============================================================
+   Módulo de informes (panel del administrador)
+   ============================================================ */
+#seccion-informes {
+  --inf-fondo: #ffffff;
+  --inf-borde: #e5e3da;
+  --inf-texto: #1f2937;
+  --inf-suave: #6b7280;
+  --inf-primario: #185fa5;
+  --inf-fila: #f1efe8;
+  --inf-hover: #f8f7f2;
+  --inf-barra: #e8eef6;
+  max-width: 1200px;
+}
+
+html[data-theme="dark"] #seccion-informes {
+  --inf-fondo: #1e293b;
+  --inf-borde: #334155;
+  --inf-texto: #e2e8f0;
+  --inf-suave: #94a3b8;
+  --inf-primario: #7fb4e8;
+  --inf-fila: #2b3a52;
+  --inf-hover: #243247;
+  --inf-barra: #2b3a52;
+}
+
+/* ----- Filtros ----- */
+.inf-filtros {
+  background: var(--inf-fondo);
+  border: 1px solid var(--inf-borde);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.inf-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.inf-preset {
+  width: auto;
+  margin: 0;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--inf-suave);
+  border: 1px solid var(--inf-borde);
+  cursor: pointer;
+}
+
+.inf-preset:hover {
+  color: var(--inf-primario);
+  border-color: var(--inf-primario);
+}
+
+.inf-preset.activo {
+  background: var(--inf-primario);
+  border-color: var(--inf-primario);
+  color: #fff;
+}
+
+html[data-theme="dark"] .inf-preset.activo {
+  color: #0f172a;
+}
+
+.inf-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.inf-campos label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--inf-suave);
+  margin-bottom: 3px;
+}
+
+.inf-campos input,
+.inf-campos select {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.inf-campos select {
+  padding: 9px 8px;
+  font-size: 0.9rem;
+}
+
+.inf-acciones {
+  display: flex;
+  gap: 8px;
+}
+
+.inf-acciones button {
+  width: auto;
+  margin: 0;
+  flex: 1;
+}
+
+.inf-btn-sec {
+  background: transparent !important;
+  color: var(--inf-primario) !important;
+  border: 1px solid var(--inf-primario) !important;
+}
+
+/* ----- Pestañas ----- */
+.inf-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-bottom: 2px solid var(--inf-borde);
+  margin-bottom: 18px;
+}
+
+.inf-tab {
+  width: auto;
+  margin: 0 0 -2px;
+  padding: 9px 16px;
+  background: transparent;
+  color: var(--inf-suave);
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 6px 6px 0 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.inf-tab:hover {
+  color: var(--inf-primario);
+}
+
+.inf-tab.activo {
+  color: var(--inf-primario);
+  border-bottom-color: var(--inf-primario);
+}
+
+/* ----- KPIs ----- */
+.inf-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.inf-kpi {
+  background: var(--inf-fondo);
+  border: 1px solid var(--inf-borde);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.inf-kpi.destacado {
+  border-left: 4px solid var(--inf-primario);
+}
+
+.inf-kpi-titulo {
+  font-size: 0.75rem;
+  color: var(--inf-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.inf-kpi-valor {
+  font-size: 1.55rem;
+  line-height: 1.2;
+  color: var(--inf-texto);
+  overflow-wrap: anywhere;
+}
+
+.inf-kpi-pie {
+  font-size: 0.75rem;
+}
+
+.inf-delta {
+  display: inline-block;
+  font-weight: 600;
+  color: var(--inf-suave);
+}
+
+.inf-delta.bueno { color: #1d9e75; }
+.inf-delta.malo { color: #d85a5a; }
+.inf-delta.igual { font-weight: 400; }
+
+/* ----- Bloques ----- */
+.inf-comparacion {
+  font-size: 0.85rem;
+  color: var(--inf-suave);
+  margin: 0 0 12px;
+}
+
+.inf-comparacion strong {
+  color: var(--inf-texto);
+}
+
+.inf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.inf-bloque {
+  background: var(--inf-fondo);
+  border: 1px solid var(--inf-borde);
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.inf-bloque.completo {
+  grid-column: 1 / -1;
+}
+
+.inf-bloque h3 {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  color: var(--inf-texto);
+}
+
+.inf-nota {
+  font-size: 0.75rem;
+  color: var(--inf-suave);
+  margin: 0 0 10px;
+}
+
+.inf-vacio,
+.inf-cargando {
+  font-size: 0.85rem;
+  color: var(--inf-suave);
+  margin: 6px 0;
+}
+
+.inf-cargando {
+  text-align: center;
+  padding: 40px 0;
+}
+
+.inf-grafica {
+  position: relative;
+  width: 100%;
+}
+
+.inf-lista {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.88rem;
+  color: var(--inf-texto);
+  line-height: 1.7;
+}
+
+/* ----- Ranking con barras ----- */
+.inf-rank-fila {
+  display: grid;
+  grid-template-columns: minmax(90px, 38%) 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 0.82rem;
+}
+
+.inf-rank-nombre {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--inf-texto);
+}
+
+.inf-rank-barra {
+  height: 10px;
+  background: var(--inf-barra);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.inf-rank-barra i {
+  display: block;
+  height: 100%;
+  background: var(--inf-primario);
+  border-radius: 999px;
+}
+
+.inf-rank-fila strong {
+  color: var(--inf-texto);
+  white-space: nowrap;
+}
+
+/* ----- Tablas ----- */
+.inf-tabla-scroll {
+  overflow-x: auto;
+}
+
+.inf-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.inf-tabla th {
+  text-align: left;
+  padding: 8px 10px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--inf-suave);
+  border-bottom: 2px solid var(--inf-borde);
+  white-space: nowrap;
+}
+
+.inf-tabla td {
+  padding: 8px 10px;
+  color: var(--inf-texto);
+  border-bottom: 1px solid var(--inf-fila);
+  vertical-align: top;
+}
+
+.inf-tabla tbody tr:hover {
+  background: var(--inf-hover);
+}
+
+.inf-tabla .num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.inf-tabla small {
+  color: var(--inf-suave);
+}
+
+/* ----- Mapa de calor ----- */
+.inf-calor {
+  border-collapse: separate;
+  border-spacing: 3px;
+  font-size: 0.75rem;
+  width: 100%;
+}
+
+.inf-calor th {
+  font-weight: 600;
+  color: var(--inf-suave);
+  padding: 4px 6px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.inf-calor tbody th {
+  text-align: left;
+  width: 110px;
+}
+
+.inf-calor td {
+  text-align: center;
+  padding: 8px 4px;
+  border-radius: 6px;
+  min-width: 34px;
+  color: var(--inf-texto);
+  background-clip: padding-box;
+  box-shadow: inset 0 0 0 1px var(--inf-fila);
+}
+
+/* ----- Minis (diagnósticos por grupo) ----- */
+.inf-minis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.inf-mini {
+  border: 1px solid var(--inf-borde);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--inf-hover);
+}
+
+.inf-mini h4 {
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+  color: var(--inf-primario);
+}
+
+.inf-mini .inf-lista {
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+/* ----- Alertas ----- */
+.inf-alerta,
+.inf-ok {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+}
+
+.inf-alerta {
+  background: rgba(224, 160, 48, 0.16);
+  border: 1px solid rgba(224, 160, 48, 0.5);
+  color: var(--inf-texto);
+}
+
+.inf-ok {
+  background: rgba(29, 158, 117, 0.14);
+  border: 1px solid rgba(29, 158, 117, 0.4);
+  color: var(--inf-texto);
+}
+
+/* ----- Cabecera solo para impresión ----- */
+.inf-impresion {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .inf-rank-fila {
+    grid-template-columns: 1fr auto;
+  }
+  .inf-rank-barra {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+  .inf-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   Impresión: solo el informe, en fondo blanco
+   ============================================================ */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  html,
+  html[data-theme="dark"],
+  body,
+  html[data-theme="dark"] body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  .panel-topbar,
+  .panel-sidebar,
+  .inf-filtros,
+  .inf-tabs,
+  #seccion-informes > h2,
+  .campana,
+  #zonaCampana {
+    display: none !important;
+  }
+
+  .panel-layout,
+  .panel-contenido {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #seccion-informes,
+  html[data-theme="dark"] #seccion-informes {
+    --inf-fondo: #ffffff;
+    --inf-borde: #d1d5db;
+    --inf-texto: #111827;
+    --inf-suave: #4b5563;
+    --inf-primario: #185fa5;
+    --inf-fila: #e5e7eb;
+    --inf-hover: #ffffff;
+    --inf-barra: #e5e7eb;
+    max-width: none;
+    padding: 0;
+  }
+
+  .inf-impresion {
+    display: block;
+    border-bottom: 2px solid #185fa5;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+  }
+
+  .inf-impresion h1 {
+    font-size: 1.2rem;
+    margin: 0 0 4px;
+    color: #185fa5 !important;
+  }
+
+  .inf-impresion p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #374151;
+  }
+
+  .inf-bloque,
+  .inf-kpi,
+  .inf-mini {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+  }
+
+  .inf-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .inf-kpis {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .inf-bloque.completo {
+    grid-column: 1 / -1;
+  }
+
+  .inf-rank-barra i,
+  .inf-calor td,
+  .inf-delta {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .inf-tabla tbody tr:hover {
+    background: transparent;
+  }
+}
