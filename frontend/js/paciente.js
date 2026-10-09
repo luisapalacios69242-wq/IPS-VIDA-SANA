@@ -161,6 +161,169 @@ const cargarHistoriaCompleta = async () => {
 };
 
 // ---------- Sección Mis documentos: resúmenes de atención, fórmulas, órdenes e incapacidades ----------
+// ---------- Sección Mis documentos: agrupados por consulta, con filtros ----------
+const DOC_URL_PDF = 'https://ips-vida-sana-production.up.railway.app/api/documentos';
+const DOC_MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
+  'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+const DOC_TIPOS = {
+  atencion: { etiqueta: 'Atenciones', tag: 'Atención' },
+  formula: { etiqueta: 'Fórmulas', tag: 'Fórmula' },
+  orden: { etiqueta: 'Órdenes de examen', tag: 'Orden' },
+  incapacidad: { etiqueta: 'Incapacidades', tag: 'Incapacidad' }
+};
+const DOC_POR_PAGINA = 8;
+// "todos" guarda una consulta por elemento, con sus documentos dentro.
+const docEstado = { todos: [], tipo: 'todos', mes: '', orden: 'recientes', pagina: 1 };
+
+const docEsc = (t) => String(t ?? '').replace(/[&<>"']/g, c =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+const docFechaBonita = (clave) => {
+  const [anio, mes, dia] = String(clave).slice(0, 10).split('-').map(Number);
+  return `${dia} ${DOC_MESES[mes - 1].slice(0, 3).toLowerCase()} ${anio}`;
+};
+
+const docHora = (clave) => (String(clave).length > 10 ? String(clave).slice(11, 16) : '');
+
+const docTituloMes = (anioMes) => {
+  const [anio, mes] = anioMes.split('-').map(Number);
+  return `${DOC_MESES[mes - 1]} ${anio}`;
+};
+
+function docFiltrados() {
+  const lista = [];
+
+  docEstado.todos.forEach(g => {
+    if (docEstado.mes && g.clave.slice(0, 7) !== docEstado.mes) return;
+
+    const docs = docEstado.tipo === 'todos'
+      ? g.docs
+      : g.docs.filter(d => d.tipo === docEstado.tipo);
+
+    if (docs.length) lista.push({ ...g, docs });
+  });
+
+  lista.sort((a, b) => (a.clave < b.clave ? -1 : a.clave > b.clave ? 1 : 0));
+  if (docEstado.orden === 'recientes') lista.reverse();
+  return lista;
+}
+
+function dibujarDocumentos() {
+  const contenedor = document.getElementById('contenidoDocumentos');
+  const lista = docFiltrados();
+  const totalPaginas = Math.max(1, Math.ceil(lista.length / DOC_POR_PAGINA));
+  if (docEstado.pagina > totalPaginas) docEstado.pagina = totalPaginas;
+
+  const inicio = (docEstado.pagina - 1) * DOC_POR_PAGINA;
+  const pagina = lista.slice(inicio, inicio + DOC_POR_PAGINA);
+
+  const todosLosDocs = docEstado.todos.flatMap(g => g.docs);
+  const conteo = (tipo) => todosLosDocs.filter(d => d.tipo === tipo).length;
+
+  const chips = [['todos', 'Todos', todosLosDocs.length]]
+    .concat(Object.keys(DOC_TIPOS).map(t => [t, DOC_TIPOS[t].etiqueta, conteo(t)]))
+    .map(([tipo, etiqueta, n]) => `
+      <button type="button" class="doc-chip ${docEstado.tipo === tipo ? 'activo' : ''}" data-doc-tipo="${tipo}">
+        ${etiqueta} <span>${n}</span>
+      </button>`).join('');
+
+  const meses = [...new Set(docEstado.todos.map(g => g.clave.slice(0, 7)))].sort().reverse();
+  const opcionesMes = '<option value="">Todos los meses</option>' + meses.map(m =>
+    `<option value="${m}" ${docEstado.mes === m ? 'selected' : ''}>${docTituloMes(m)}</option>`).join('');
+
+  let html = `
+    <div class="doc-filtros">
+      <div class="doc-chips">${chips}</div>
+      <div class="doc-selects">
+        <select id="docFiltroMes">${opcionesMes}</select>
+        <select id="docFiltroOrden">
+          <option value="recientes" ${docEstado.orden === 'recientes' ? 'selected' : ''}>Más recientes primero</option>
+          <option value="antiguos" ${docEstado.orden === 'antiguos' ? 'selected' : ''}>Más antiguos primero</option>
+        </select>
+      </div>
+    </div>
+    <p class="doc-resumen">${lista.length} consulta(s) con documentos</p>`;
+
+  if (pagina.length === 0) {
+    html += '<div class="doc-vacio">No hay documentos para los filtros elegidos.</div>';
+  } else {
+    let mesActual = '';
+
+    pagina.forEach(g => {
+      const mes = g.clave.slice(0, 7);
+
+      if (mes !== mesActual) {
+        mesActual = mes;
+        html += `<h3 class="doc-mes">${docTituloMes(mes)}</h3>`;
+      }
+
+      const hora = docHora(g.clave);
+
+      html += `
+        <div class="doc-grupo">
+          <div class="doc-grupo-cab">
+            <div class="doc-grupo-fecha">
+              <strong>${docFechaBonita(g.clave)}</strong>
+              ${hora ? `<small>${hora}</small>` : ''}
+            </div>
+            <div class="doc-grupo-info">
+              <strong>${docEsc(g.doctor || 'Consulta')}</strong>
+              ${g.diagnostico ? `<small>${docEsc(g.diagnostico)}</small>` : ''}
+            </div>
+          </div>
+          ${g.docs.map(d => `
+            <div class="doc-linea">
+              <span class="doc-tag doc-tag-${d.tipo}">${DOC_TIPOS[d.tipo].tag}</span>
+              <div class="doc-info">
+                <strong>${docEsc(d.titulo)}</strong>
+                ${d.detalle ? `<small>${docEsc(d.detalle)}</small>` : ''}
+              </div>
+              <a class="doc-btn" href="${DOC_URL_PDF}/${d.ruta}/${d.id}/pdf" target="_blank">Descargar PDF</a>
+            </div>`).join('')}
+        </div>`;
+    });
+  }
+
+  if (totalPaginas > 1) {
+    html += `
+      <div class="doc-paginacion">
+        <button type="button" data-doc-pag="${docEstado.pagina - 1}" ${docEstado.pagina === 1 ? 'disabled' : ''}>‹ Anterior</button>
+        <span>Página ${docEstado.pagina} de ${totalPaginas}</span>
+        <button type="button" data-doc-pag="${docEstado.pagina + 1}" ${docEstado.pagina === totalPaginas ? 'disabled' : ''}>Siguiente ›</button>
+      </div>`;
+  }
+
+  contenedor.innerHTML = html;
+}
+
+(() => {
+  const contenedor = document.getElementById('contenidoDocumentos');
+
+  contenedor.addEventListener('click', (e) => {
+    const chip = e.target.closest('[data-doc-tipo]');
+    const pag = e.target.closest('[data-doc-pag]');
+
+    if (chip) {
+      docEstado.tipo = chip.dataset.docTipo;
+      docEstado.pagina = 1;
+      dibujarDocumentos();
+    } else if (pag && !pag.disabled) {
+      docEstado.pagina = Number(pag.dataset.docPag);
+      dibujarDocumentos();
+      contenedor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+
+  contenedor.addEventListener('change', (e) => {
+    if (e.target.id === 'docFiltroMes') docEstado.mes = e.target.value;
+    else if (e.target.id === 'docFiltroOrden') docEstado.orden = e.target.value;
+    else return;
+
+    docEstado.pagina = 1;
+    dibujarDocumentos();
+  });
+})();
+
 const cargarDocumentos = async () => {
   const contenedor = document.getElementById('contenidoDocumentos');
   contenedor.textContent = 'Cargando...';
@@ -169,60 +332,65 @@ const cargarDocumentos = async () => {
     const respuesta = await fetch(`${API}/api/pacientes/${usuario.id_paciente}/documentos`);
     const datos = await respuesta.json();
 
-    const atencionesHtml = datos.atenciones.length
-      ? datos.atenciones.map(a => `
-          <div class="fila-cita">
-            <div>${a.fecha} — Dr(a). ${a.doctor_nombres} ${a.doctor_apellidos}</div>
-            <a href="https://ips-vida-sana-production.up.railway.app/api/documentos/atencion/${a.id_consulta}/pdf" target="_blank">
-              <button>Descargar PDF</button>
-            </a>
-          </div>
-        `).join('')
-      : '<p>Aún no tienes resúmenes de atención.</p>';
+    if (!respuesta.ok) {
+      contenedor.textContent = datos.mensaje || 'No se pudieron cargar los documentos.';
+      return;
+    }
 
-    const formulasHtml = datos.formulas.length
-      ? datos.formulas.map(f => `
-          <div class="fila-cita">
-            <div>Fórmula médica — ${f.fecha}</div>
-            <a href="https://ips-vida-sana-production.up.railway.app/api/documentos/formula/${f.id_formula}/pdf" target="_blank">
-              <button>Descargar PDF</button>
-            </a>
-          </div>
-        `).join('')
-      : '<p>No tienes fórmulas médicas.</p>';
+    // Se agrupan los documentos por la consulta a la que pertenecen.
+    const grupos = new Map();
 
-    const ordenesHtml = datos.ordenes.length
-      ? datos.ordenes.map(o => `
-          <div class="fila-cita">
-            <div>${o.examenes} — ${o.fecha}</div>
-            <a href="https://ips-vida-sana-production.up.railway.app/api/documentos/orden/${o.id_orden}/pdf" target="_blank">
-              <button>Descargar PDF</button>
-            </a>
-          </div>
-        `).join('')
-      : '<p>No tienes órdenes de examen.</p>';
+    const grupoDe = (idConsulta, clave) => {
+      if (!grupos.has(idConsulta)) {
+        grupos.set(idConsulta, { id: idConsulta, clave: String(clave), doctor: '', diagnostico: '', docs: [] });
+      }
+      return grupos.get(idConsulta);
+    };
 
-    const incapacidadesHtml = datos.incapacidades.length
-      ? datos.incapacidades.map(i => `
-          <div class="fila-cita">
-            <div>Del ${i.fecha_inicio} al ${i.fecha_fin} — ${i.dias_incapacidad} día(s)</div>
-            <a href="https://ips-vida-sana-production.up.railway.app/api/documentos/incapacidad/${i.id_incapacidad}/pdf" target="_blank">
-              <button>Descargar PDF</button>
-            </a>
-          </div>
-        `).join('')
-      : '<p>No tienes incapacidades médicas.</p>';
+    datos.atenciones.forEach(a => {
+      const g = grupoDe(a.id_consulta, a.fecha);
+      g.clave = String(a.fecha);
+      g.doctor = `Dr(a). ${a.doctor_nombres} ${a.doctor_apellidos}`;
+      g.diagnostico = a.diagnostico || '';
+      g.docs.push({
+        tipo: 'atencion', ruta: 'atencion', id: a.id_consulta,
+        titulo: 'Resumen de atención', detalle: 'Datos de la consulta y diagnóstico'
+      });
+    });
 
-    contenedor.innerHTML = `
-      <h3>Resúmenes de atención</h3>
-      ${atencionesHtml}
-      <h3>Fórmulas médicas</h3>
-      ${formulasHtml}
-      <h3>Órdenes de examen</h3>
-      ${ordenesHtml}
-      <h3>Incapacidades médicas</h3>
-      ${incapacidadesHtml}
-    `;
+    datos.formulas.forEach(f => {
+      grupoDe(f.consulta_id, f.fecha).docs.push({
+        tipo: 'formula', ruta: 'formula', id: f.id_formula,
+        titulo: 'Fórmula médica', detalle: 'Medicamentos formulados'
+      });
+    });
+
+    datos.ordenes.forEach(o => {
+      grupoDe(o.consulta_id, o.fecha).docs.push({
+        tipo: 'orden', ruta: 'orden', id: o.id_orden,
+        titulo: 'Orden de examen', detalle: o.examenes || ''
+      });
+    });
+
+    datos.incapacidades.forEach(i => {
+      grupoDe(i.consulta_id, i.fecha_inicio).docs.push({
+        tipo: 'incapacidad', ruta: 'incapacidad', id: i.id_incapacidad,
+        titulo: 'Incapacidad médica',
+        detalle: `${i.dias_incapacidad} día(s) · del ${String(i.fecha_inicio).slice(0, 10)} al ${String(i.fecha_fin).slice(0, 10)}`
+      });
+    });
+
+    docEstado.todos = [...grupos.values()];
+    docEstado.tipo = 'todos';
+    docEstado.mes = '';
+    docEstado.pagina = 1;
+
+    if (docEstado.todos.length === 0) {
+      contenedor.innerHTML = '<div class="doc-vacio">Aún no tienes documentos médicos.</div>';
+      return;
+    }
+
+    dibujarDocumentos();
   } catch (error) {
     contenedor.textContent = 'No se pudieron cargar los documentos.';
     console.error(error);

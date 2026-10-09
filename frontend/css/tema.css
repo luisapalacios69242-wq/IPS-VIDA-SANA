@@ -439,3 +439,26 @@ html[data-theme="dark"] .dx-vacio { color: #94a3b8; }
 html[data-theme="dark"] .horario-titulo {
   color: #e2e8f0;
 }
+
+html[data-theme="dark"] .doc-grupo {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .doc-grupo-cab {
+  background: #263449;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .doc-grupo-fecha {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .doc-grupo-fecha small,
+html[data-theme="dark"] .doc-grupo-info small {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .doc-linea + .doc-linea {
+  border-color: #334155;
+}

@@ -10,7 +10,7 @@ const registrarPaciente = async (req, res) => {
   } = req.body;
 
   if (!nombres || !apellidos || !tipo_documento || !numero_documento ||
-      !fecha_nacimiento || !genero || !correo) {
+    !fecha_nacimiento || !genero || !correo) {
     return res.status(400).json({ mensaje: 'Faltan campos obligatorios.' });
   }
 
@@ -47,8 +47,8 @@ const registrarPaciente = async (req, res) => {
          contrasena, contrasena_temporal, rol_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE, ?)`,
       [nombres, apellidos, tipo_documento, numero_documento, fecha_nacimiento,
-       genero, estado_civil, direccion, ciudad, telefono, correo,
-       contrasenaHash, rolPaciente[0].id_rol]
+        genero, estado_civil, direccion, ciudad, telefono, correo,
+        contrasenaHash, rolPaciente[0].id_rol]
     );
 
     const nuevoUsuarioId = resultadoUsuario.insertId;
@@ -59,7 +59,7 @@ const registrarPaciente = async (req, res) => {
          contacto_emergencia_telefono, eps, tipo_afiliacion)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [nuevoUsuarioId, ocupacion, numero_hijos || 0,
-       contacto_emergencia_nombre, contacto_emergencia_telefono, eps, tipo_afiliacion]
+        contacto_emergencia_nombre, contacto_emergencia_telefono, eps, tipo_afiliacion]
     );
 
     await conexion.commit();
@@ -235,7 +235,7 @@ const obtenerDocumentosPaciente = async (req, res) => {
 
   try {
     const [atenciones] = await pool.query(
-      `SELECT co.id_consulta, co.fecha_consulta AS fecha,
+      `SELECT co.id_consulta, co.fecha_consulta AS fecha, co.diagnostico,
               ud.nombres AS doctor_nombres, ud.apellidos AS doctor_apellidos
        FROM consulta co
        JOIN cita c ON c.id_cita = co.cita_id
@@ -247,7 +247,7 @@ const obtenerDocumentosPaciente = async (req, res) => {
     );
 
     const [formulas] = await pool.query(
-      `SELECT f.id_formula, f.fecha, f.documento_pdf
+      `SELECT f.id_formula, f.consulta_id, f.fecha, f.documento_pdf
        FROM formula_medica f
        JOIN consulta co ON co.id_consulta = f.consulta_id
        JOIN cita c ON c.id_cita = co.cita_id
@@ -257,7 +257,7 @@ const obtenerDocumentosPaciente = async (req, res) => {
     );
 
     const [ordenes] = await pool.query(
-      `SELECT oe.id_orden, oe.fecha,
+      `SELECT oe.id_orden, oe.consulta_id, oe.fecha,
               GROUP_CONCAT(te.nombre SEPARATOR ', ') AS examenes
        FROM orden_examen oe
        JOIN detalle_orden_examen do ON do.orden_id = oe.id_orden
@@ -265,13 +265,13 @@ const obtenerDocumentosPaciente = async (req, res) => {
        JOIN consulta co ON co.id_consulta = oe.consulta_id
        JOIN cita c ON c.id_cita = co.cita_id
        WHERE c.paciente_id = ?
-       GROUP BY oe.id_orden, oe.fecha
+       GROUP BY oe.id_orden, oe.consulta_id, oe.fecha
        ORDER BY oe.fecha DESC`,
       [id_paciente]
     );
 
     const [incapacidades] = await pool.query(
-      `SELECT im.id_incapacidad, im.fecha_inicio, im.fecha_fin, im.dias_incapacidad
+      `SELECT im.id_incapacidad, im.consulta_id, im.fecha_inicio, im.fecha_fin, im.dias_incapacidad
        FROM incapacidad_medica im
        JOIN consulta co ON co.id_consulta = im.consulta_id
        JOIN cita c ON c.id_cita = co.cita_id
@@ -355,9 +355,9 @@ const actualizarFichaPaciente = async (req, res) => {
         correo = COALESCE(?, correo)
        WHERE id_usuario = ?`,
       [valorONulo(b.nombres), valorONulo(b.apellidos), valorONulo(b.fecha_nacimiento),
-       valorONulo(b.genero), valorONulo(b.estado_civil), valorONulo(b.direccion),
-       valorONulo(b.ciudad), valorONulo(b.telefono), valorONulo(b.correo),
-       rows[0].usuario_id]
+      valorONulo(b.genero), valorONulo(b.estado_civil), valorONulo(b.direccion),
+      valorONulo(b.ciudad), valorONulo(b.telefono), valorONulo(b.correo),
+      rows[0].usuario_id]
     );
 
     await conexion.query(
@@ -367,7 +367,7 @@ const actualizarFichaPaciente = async (req, res) => {
         eps = COALESCE(?, eps)
        WHERE id_paciente = ?`,
       [valorONulo(b.contacto_emergencia_nombre), valorONulo(b.contacto_emergencia_telefono),
-       valorONulo(b.eps), id_paciente]
+      valorONulo(b.eps), id_paciente]
     );
 
     await conexion.commit();
