@@ -835,7 +835,7 @@ document.getElementById('listaHorarios').addEventListener('click', async (e) => 
 });
 document.getElementById('btnLunesViernes').addEventListener('click', () => {
   document.querySelectorAll('.chk-dia').forEach(c => {
-    c.checked = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes'].includes(c.value);
+    c.checked = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'].includes(c.value);
   });
 });
 
