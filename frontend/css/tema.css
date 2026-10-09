@@ -371,21 +371,22 @@ html[data-theme="dark"] .vs-esp-card .vs-icono {
 /* El footer y el testimonio de bienvenida ya son oscuros de por sí: no necesitan cambios */
 
 /* ---------- Registros de usuarios (modo oscuro) ---------- */
-html[data-theme="dark"] .reg-item { background: #1e1e1c; border-color: #3a3a36; box-shadow: none; }
+/* ---------- Registros de usuarios (modo oscuro) ---------- */
+html[data-theme="dark"] .reg-item { background: #1e293b; border-color: #334155; box-shadow: none; }
 html[data-theme="dark"] .reg-item:hover { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4); }
-html[data-theme="dark"] .reg-nombre { color: #f1efe8; }
-html[data-theme="dark"] .reg-datos { color: #d3d1c7; }
-html[data-theme="dark"] .reg-datos b, html[data-theme="dark"] .reg-meta { color: #9c9a92; }
-html[data-theme="dark"] .reg-contador, html[data-theme="dark"] .reg-vacio { color: #b4b2a9; }
-html[data-theme="dark"] .reg-rol-chip { background: #12304f; color: #8ec2f2; }
+html[data-theme="dark"] .reg-nombre { color: #e2e8f0; }
+html[data-theme="dark"] .reg-datos { color: #cbd5e1; }
+html[data-theme="dark"] .reg-datos b, html[data-theme="dark"] .reg-meta { color: #94a3b8; }
+html[data-theme="dark"] .reg-contador, html[data-theme="dark"] .reg-vacio { color: #94a3b8; }
+html[data-theme="dark"] .reg-rol-chip { background: #1b2b40; color: #7fb4e8; }
 html[data-theme="dark"] .reg-rol-doctor { background: #0f3a2e; color: #7fd8b8; }
 html[data-theme="dark"] .reg-rol-secretaria { background: #4a3510; color: #f0c674; }
-html[data-theme="dark"] .reg-inactivo { background: #4a1c1c; color: #f0a0a0; }
+html[data-theme="dark"] .reg-inactivo { background: #3a1e1e; color: #f87171; }
 html[data-theme="dark"] .reg-pendiente { background: #4a3510; color: #f0c674; }
 html[data-theme="dark"] .reg-ok { background: #0f3a2e; color: #7fd8b8; }
-html[data-theme="dark"] .reg-btn-doc { background: transparent; color: #8ec2f2; border-color: #8ec2f2; }
-html[data-theme="dark"] .reg-btn-reset { background: #2b7bc4; border-color: #2b7bc4; }
-html[data-theme="dark"] .reg-pag-btn { background: #1e1e1c; color: #8ec2f2; border-color: #3a3a36; }
-html[data-theme="dark"] .reg-pag-btn:hover:not(:disabled) { background: #2a2a27; }
-html[data-theme="dark"] .reg-pag-btn.activa { background: #2b7bc4; color: #fff; border-color: #2b7bc4; }
+html[data-theme="dark"] .reg-btn-doc { background: transparent; color: #7fb4e8; border-color: #7fb4e8; }
+html[data-theme="dark"] .reg-btn-reset { background: #185fa5; border-color: #185fa5; color: #fff; }
+html[data-theme="dark"] .reg-pag-btn { background: #1e293b; color: #7fb4e8; border-color: #334155; }
+html[data-theme="dark"] .reg-pag-btn:hover:not(:disabled) { background: #24334a; }
+html[data-theme="dark"] .reg-pag-btn.activa { background: #185fa5; color: #fff; border-color: #185fa5; }
 html[data-theme="dark"] .reg-mensaje.exito { color: #7fd8b8; }
