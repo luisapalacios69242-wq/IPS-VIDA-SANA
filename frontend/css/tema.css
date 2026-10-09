@@ -400,3 +400,13 @@ html[data-theme="dark"] .gest-check { background: #1e293b; border-color: #334155
 html[data-theme="dark"] .gest-check:hover { background: #24334a; }
 html[data-theme="dark"] .gest-check:has(input:checked) { background: #1b2b40; border-color: #7fb4e8; }
 html[data-theme="dark"] .gest-btn-cancelar { background: #1e293b; color: #e2e8f0; border-color: #334155; }
+
+
+/* ---------- Especialidades (modo oscuro) ---------- */
+html[data-theme="dark"] .esp-card { background: #1e293b; border-color: #334155; box-shadow: none; }
+html[data-theme="dark"] .esp-card:hover { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4); }
+html[data-theme="dark"] .esp-nombre { color: #e2e8f0; }
+html[data-theme="dark"] .esp-desc, html[data-theme="dark"] .esp-doc small { color: #94a3b8; }
+html[data-theme="dark"] .esp-doc { color: #cbd5e1; }
+html[data-theme="dark"] .esp-doctores { border-top-color: #334155; }
+html[data-theme="dark"] .esp-btn-peligro { background: transparent; color: #f87171; border-color: #4a2a2a; }

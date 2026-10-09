@@ -1183,3 +1183,32 @@ select[disabled] {
 @media (max-width: 720px) {
   .gest-grid { grid-template-columns: 1fr; }
 }
+
+/* ---------- Especialidades ---------- */
+.esp-layout { display: grid; grid-template-columns: 300px 1fr; gap: 22px; align-items: start; max-width: 1100px; margin: 0 auto; }
+.esp-form-card { position: sticky; top: 16px; margin: 0; }
+.esp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+
+.esp-card {
+  background: #fff; border: 1px solid #e3e1d9; border-radius: 12px; padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column; gap: 12px;
+  transition: box-shadow 0.15s ease;
+}
+.esp-card:hover { box-shadow: 0 4px 14px rgba(24, 95, 165, 0.14); }
+.esp-cabecera { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.esp-nombre { margin: 0; font-size: 1rem; color: #1f2d3d; }
+.esp-desc { margin: 3px 0 0; font-size: 0.8rem; color: #7a786f; }
+
+.esp-acciones { display: flex; gap: 8px; }
+.esp-acciones button { flex: 1; width: auto; margin: 0; padding: 7px 10px; font-size: 0.78rem; border-radius: 8px; }
+.esp-btn-peligro { background: #fff; color: #b91c1c; border: 1px solid #e5c4c4; }
+
+.esp-doctores:empty { display: none; }
+.esp-doctores { border-top: 1px solid #e5e3da; padding-top: 10px; font-size: 0.84rem; }
+.esp-doc { padding: 3px 0; color: #3d3d3a; }
+.esp-doc small { color: #7a786f; margin-left: 8px; }
+
+@media (max-width: 900px) {
+  .esp-layout { grid-template-columns: 1fr; }
+  .esp-form-card { position: static; }
+}

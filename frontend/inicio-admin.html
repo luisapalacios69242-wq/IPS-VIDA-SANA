@@ -142,15 +142,20 @@
 
             <section id="seccion-especialidades" class="seccion oculto">
                 <h2>Especialidades</h2>
-                <div class="tarjeta" style="max-width:420px;">
-                    <label>Nombre</label>
-                    <input type="text" id="espNombre" placeholder="Ej. Cardiología">
-                    <label>Descripción</label>
-                    <input type="text" id="espDescripcion" placeholder="Opcional">
-                    <button id="btnCrearEspecialidad">Crear especialidad</button>
-                    <p id="mensajeEspecialidad" class="error"></p>
+
+                <div class="esp-layout">
+                    <div class="tarjeta esp-form-card">
+                        <h3>Nueva especialidad</h3>
+                        <label>Nombre</label>
+                        <input type="text" id="espNombre" placeholder="Ej. Cardiología">
+                        <label>Descripción</label>
+                        <input type="text" id="espDescripcion" placeholder="Opcional">
+                        <button id="btnCrearEspecialidad">Crear especialidad</button>
+                        <p id="mensajeEspecialidad" class="error"></p>
+                    </div>
+
+                    <div id="listaEspecialidades"></div>
                 </div>
-                <div id="listaEspecialidades"></div>
             </section>
 
             <section id="seccion-servicios" class="seccion oculto">

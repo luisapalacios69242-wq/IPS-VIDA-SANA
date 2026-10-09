@@ -124,50 +124,109 @@ document.getElementById('btnRegistrarUsuario').addEventListener('click', async (
 });
 
 // ---------- Especialidades ----------
+let especialidadesLista = [];
+let paginaEsp = 1;
+const POR_PAGINA_ESP = 6;
+
+function dibujarEspecialidades() {
+  const contenedor = document.getElementById('listaEspecialidades');
+
+  if (especialidadesLista.length === 0) {
+    contenedor.innerHTML = '<p class="reg-vacio">Aún no hay especialidades creadas.</p>';
+    return;
+  }
+
+  const total = especialidadesLista.length;
+  const paginas = Math.ceil(total / POR_PAGINA_ESP);
+  if (paginaEsp > paginas) paginaEsp = paginas;
+  const inicio = (paginaEsp - 1) * POR_PAGINA_ESP;
+  const visibles = especialidadesLista.slice(inicio, inicio + POR_PAGINA_ESP);
+
+  const tarjetasHtml = visibles.map(e => `
+    <article class="esp-card">
+      <div class="esp-cabecera">
+        <div>
+          <h3 class="esp-nombre">${escUsr(e.nombre)}</h3>
+          <p class="esp-desc">${escUsr(e.descripcion) || 'Sin descripción'}</p>
+        </div>
+        <span class="reg-etiqueta ${e.estado === 'activa' ? 'reg-ok' : 'reg-inactivo'}">${escUsr(e.estado)}</span>
+      </div>
+
+      <div class="esp-acciones">
+        ${e.estado === 'activa'
+          ? `<button type="button" class="btn-desactivar esp-btn-peligro" data-id="${e.id_especialidad}">Desactivar</button>`
+          : `<button type="button" class="btn-activar" data-id="${e.id_especialidad}">Activar</button>`}
+        <button type="button" class="btn-ver-doctores reg-btn-doc" data-id="${e.id_especialidad}">Ver doctores</button>
+      </div>
+
+      <div id="doctoresEsp-${e.id_especialidad}" class="esp-doctores"></div>
+    </article>
+  `).join('');
+
+  let paginacionHtml = '';
+  if (paginas > 1) {
+    const numeros = numerosPaginaGestion(paginaEsp, paginas).map(n =>
+      n === '...'
+        ? '<span class="reg-pag-puntos">…</span>'
+        : `<button type="button" class="reg-pag-btn ${n === paginaEsp ? 'activa' : ''}" data-pagina="${n}">${n}</button>`
+    ).join('');
+
+    paginacionHtml = `
+      <nav class="reg-paginacion">
+        <button type="button" class="reg-pag-btn" data-pagina="${paginaEsp - 1}" ${paginaEsp === 1 ? 'disabled' : ''}>‹ Anterior</button>
+        ${numeros}
+        <button type="button" class="reg-pag-btn" data-pagina="${paginaEsp + 1}" ${paginaEsp === paginas ? 'disabled' : ''}>Siguiente ›</button>
+      </nav>
+    `;
+  }
+
+  contenedor.innerHTML = `
+    <p class="reg-contador" style="text-align:left;">Mostrando ${inicio + 1}–${inicio + visibles.length} de ${total} especialidad(es)</p>
+    <div class="esp-grid">${tarjetasHtml}</div>
+    ${paginacionHtml}
+  `;
+}
+
 async function cargarEspecialidades() {
   const contenedor = document.getElementById('listaEspecialidades');
-  contenedor.textContent = 'Cargando...';
+  if (especialidadesLista.length === 0) contenedor.innerHTML = '<p class="reg-vacio">Cargando...</p>';
 
   try {
     const respuesta = await fetch(`${API}/api/admin/especialidades`);
-    const especialidades = await respuesta.json();
-
-    contenedor.innerHTML = especialidades.map(e => `
-      <div class="tarjeta" style="max-width:500px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <strong>${e.nombre}</strong><br>
-            <span style="font-size:0.8rem; color:#5f5e5a;">${e.descripcion || ''}</span>
-          </div>
-          <div>
-            <span class="estado-badge">${e.estado}</span>
-          </div>
-        </div>
-        <div style="margin-top:8px; display:flex; gap:8px;">
-          ${e.estado === 'activa'
-        ? `<button class="btn-desactivar" data-id="${e.id_especialidad}" style="background:#fff; color:#b91c1c; border:1px solid #d3d1c7;">Desactivar</button>`
-        : `<button class="btn-activar" data-id="${e.id_especialidad}">Activar</button>`}
-          <button class="btn-ver-doctores" data-id="${e.id_especialidad}" style="background:#fff; color:#185fa5; border:1px solid #185fa5;">Ver doctores</button>
-        </div>
-        <div id="doctoresEsp-${e.id_especialidad}"></div>
-      </div>
-    `).join('');
-
-    document.querySelectorAll('.btn-desactivar').forEach(boton => {
-      boton.addEventListener('click', () => cambiarEstadoEspecialidad(boton.dataset.id, 'inactiva'));
-    });
-    document.querySelectorAll('.btn-activar').forEach(boton => {
-      boton.addEventListener('click', () => cambiarEstadoEspecialidad(boton.dataset.id, 'activa'));
-    });
-    document.querySelectorAll('.btn-ver-doctores').forEach(boton => {
-      boton.addEventListener('click', () => verDoctoresDeEspecialidad(boton.dataset.id));
-    });
-
+    const datos = await respuesta.json();
+    especialidadesLista = Array.isArray(datos) ? datos : [];
+    dibujarEspecialidades();
   } catch (error) {
-    contenedor.textContent = 'No se pudieron cargar las especialidades.';
+    contenedor.innerHTML = '<p class="reg-vacio">No se pudieron cargar las especialidades.</p>';
     console.error(error);
   }
 }
+
+// Un solo listener para todos los botones de la lista (sigue funcionando al cambiar de página)
+document.getElementById('listaEspecialidades').addEventListener('click', (evento) => {
+  const boton = evento.target.closest('button');
+  if (!boton || boton.disabled) return;
+
+  if (boton.classList.contains('reg-pag-btn')) {
+    paginaEsp = Number(boton.dataset.pagina);
+    dibujarEspecialidades();
+    document.getElementById('listaEspecialidades').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+
+  if (boton.classList.contains('btn-desactivar')) {
+    cambiarEstadoEspecialidad(boton.dataset.id, 'inactiva');
+  } else if (boton.classList.contains('btn-activar')) {
+    cambiarEstadoEspecialidad(boton.dataset.id, 'activa');
+  } else if (boton.classList.contains('btn-ver-doctores')) {
+    const zona = document.getElementById(`doctoresEsp-${boton.dataset.id}`);
+    if (zona.innerHTML.trim()) {
+      zona.innerHTML = '';
+    } else {
+      verDoctoresDeEspecialidad(boton.dataset.id);
+    }
+  }
+});
 
 async function cambiarEstadoEspecialidad(id, nuevoEstado) {
   try {
@@ -192,8 +251,10 @@ async function verDoctoresDeEspecialidad(id) {
     const doctores = await respuesta.json();
 
     contenedor.innerHTML = doctores.length
-      ? doctores.map(d => `<div style="font-size:0.85rem; padding:4px 0;">• Dr(a). ${d.nombres} ${d.apellidos} — ${d.tarjeta_profesional}</div>`).join('')
-      : '<p style="font-size:0.85rem;">Ningún doctor tiene esta especialidad asignada todavía.</p>';
+      ? doctores.map(d => `
+          <div class="esp-doc">Dr(a). ${escUsr(d.nombres)} ${escUsr(d.apellidos)}<small>${escUsr(d.tarjeta_profesional)}</small></div>
+        `).join('')
+      : '<p class="esp-doc" style="margin:0;">Ningún doctor tiene esta especialidad asignada todavía.</p>';
 
   } catch (error) {
     contenedor.textContent = 'No se pudieron cargar los doctores.';
