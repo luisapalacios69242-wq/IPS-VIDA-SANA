@@ -310,7 +310,7 @@ async function atenderConsulta(id_cita) {
     }
 
     const datosConsulta = {
-        diagnostico,
+        diagnostico_codigo,
         observaciones,
         peso: valor(`peso-${id_cita}`) || null,
         talla: valor(`talla-${id_cita}`) || null,
