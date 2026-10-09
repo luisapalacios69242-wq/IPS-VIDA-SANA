@@ -1267,7 +1267,7 @@ async function guardarEdicionUsuario(id_usuario, rol) {
 
 // ---------- Informes ----------
 const NOMBRE_ESTADO = {
-  programada: 'Programada', confirmada: 'Confirmada', en_espera: 'En espera',
+  en_espera: 'En espera', en_atencion: 'Atendiendo',
   atendida: 'Atendida', cancelada: 'Cancelada', no_asistida: 'No asistida'
 };
 

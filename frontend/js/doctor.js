@@ -17,15 +17,14 @@ document.getElementById('btnCerrarSesion').addEventListener('click', () => {
 // puede mostrar esta página desde su caché sin volver a ejecutar el chequeo de arriba.
 // Forzamos una recarga para que se vuelva a validar la sesión.
 window.addEventListener('pageshow', (evento) => {
-  if (evento.persisted) {
-    window.location.reload();
-  }
+    if (evento.persisted) {
+        window.location.reload();
+    }
 });
 
 const formatearEstado = (estado) => {
     const mapa = {
-        programada: 'Programada', confirmada: 'Confirmada', en_espera: 'En espera',
-        atendida: 'Atendida', cancelada: 'Cancelada', no_asistida: 'No asistida'
+        programada: 'Programada', confirmada: 'Confirmada', en_espera: 'En espera', en_atencion: 'Atendiendo', cancelada: 'Cancelada', no_asistida: 'No asistida'
     };
     return mapa[estado] || estado;
 };
@@ -114,10 +113,17 @@ async function cargarAgenda() {
             <strong>${c.hora.slice(0, 5)} · ${c.paciente_nombres} ${c.paciente_apellidos}</strong><br>
             <span style="font-size:0.8rem; color:#5f5e5a;">${c.tipo}</span>
           </div>
-          <span class="estado-badge">${formatearEstado(c.estado)}</span>
+          <span class="estado-badge estado-${c.estado}" id="badge-${c.id_cita}">${formatearEstado(c.estado)}</span>
         </div>
 
         ${c.estado === 'en_espera' ? `
+          <div style="margin-top:12px;">
+            <button onclick="iniciarAtencion(${c.id_cita})">Iniciar atención</button>
+            <button onclick="marcarNoAsistio(${c.id_cita})" style="background:#fff; color:#b91c1c; border:1px solid #d3d1c7; margin-left:6px;">Marcar no asistió</button>
+          </div>
+        ` : ''}
+
+        ${c.estado === 'en_atencion' ? `
           <div id="atender-${c.id_cita}" style="margin-top:12px;">
             <details open>
               <summary>Datos del paciente</summary>
@@ -180,7 +186,7 @@ async function cargarAgenda() {
     `).join('');
 
         citas
-            .filter(c => c.estado === 'en_espera')
+            .filter(c => c.estado === 'en_atencion')
             .forEach(c => cargarDatosDelPaciente(c.id_cita, c.paciente_id));
 
     } catch (error) {
@@ -293,6 +299,23 @@ async function atenderConsulta(id_cita) {
     }
 }
 
+async function iniciarAtencion(id_cita) {
+    try {
+        const respuesta = await fetch(`${API}/api/doctor/citas/${id_cita}/iniciar`, { method: 'PUT' });
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            alert(datos.mensaje);
+            return;
+        }
+
+        cargarAgenda();
+    } catch (error) {
+        alert('No se pudo iniciar la atención.');
+        console.error(error);
+    }
+}
+
 async function marcarNoAsistio(id_cita) {
     try {
         const respuesta = await fetch(`${API}/api/doctor/citas/${id_cita}/no-asistio`, { method: 'PUT' });
@@ -312,6 +335,12 @@ async function marcarNoAsistio(id_cita) {
 
 async function mostrarAccionesPostAtencion(id_cita, id_consulta) {
     document.getElementById(`atender-${id_cita}`).remove();
+
+        const badge = document.getElementById(`badge-${id_cita}`);
+    if (badge) {
+        badge.textContent = 'Atendida';
+        badge.className = 'estado-badge estado-atendida';
+    }
 
     const [medicamentos, tiposExamen] = await Promise.all([
         fetch(`${API}/api/doctor/medicamentos`).then(r => r.json()),
@@ -680,7 +709,7 @@ async function mostrarDetalleDia(texto) {
 
         zonaCitas.innerHTML = citas.length
             ? `<p><strong>${esPasado ? 'Citas de ese día' : 'Citas'}:</strong></p>` +
-              citas.map(c => `
+            citas.map(c => `
                 <div class="fila-cita">
                   <div>${recortarHora(c.hora)} · ${c.paciente_nombres} ${c.paciente_apellidos}</div>
                   <span class="estado-badge">${formatearEstado(c.estado)}</span>
@@ -759,6 +788,6 @@ inputFecha.addEventListener('change', cargarAgenda);
 cargarAgenda();
 
 Notificaciones.montar({
-  contenedor: document.getElementById('zonaCampana'),
-  usuarioId: usuario.id_usuario
+    contenedor: document.getElementById('zonaCampana'),
+    usuarioId: usuario.id_usuario
 });

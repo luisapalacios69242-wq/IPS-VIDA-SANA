@@ -24,7 +24,7 @@ window.addEventListener('pageshow', (evento) => {
 
 const formatearEstado = (estado) => {
     const mapa = {
-        programada: 'Programada', confirmada: 'Confirmada', en_espera: 'En espera',
+        en_espera: 'En espera', en_atencion: 'Atendiendo',
         atendida: 'Atendida', cancelada: 'Cancelada', no_asistida: 'No asistida'
     };
     return mapa[estado] || estado;

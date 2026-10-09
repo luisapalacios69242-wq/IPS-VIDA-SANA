@@ -51,10 +51,10 @@ const atenderConsulta = async (req, res) => {
       return res.status(404).json({ mensaje: 'La cita no existe.' });
     }
 
-    if (citaRows[0].estado !== 'en_espera') {
+    if (!['en_espera', 'en_atencion'].includes(citaRows[0].estado)) {
       conexion.release();
       return res.status(409).json({
-        mensaje: `La cita está en estado '${citaRows[0].estado}'. Solo se puede atender una cita en estado 'en_espera' (después de que la secretaria confirme la llegada).`
+        mensaje: `La cita está en estado '${citaRows[0].estado}'. Solo se puede atender una cita que esté en espera o en atención.`
       });
     }
 
@@ -77,8 +77,8 @@ const atenderConsulta = async (req, res) => {
          frecuencia_cardiaca, frecuencia_respiratoria, examen_fisico)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [id_cita, historiaRows[0].id_historia, diagnostico, observaciones || null,
-       peso || null, talla || null, presion_arterial || null, temperatura || null,
-       frecuencia_cardiaca || null, frecuencia_respiratoria || null, examen_fisico || null]
+        peso || null, talla || null, presion_arterial || null, temperatura || null,
+        frecuencia_cardiaca || null, frecuencia_respiratoria || null, examen_fisico || null]
     );
 
     await conexion.query(
@@ -102,13 +102,34 @@ const atenderConsulta = async (req, res) => {
   }
 };
 
+const iniciarAtencion = async (req, res) => {
+  const { id_cita } = req.params;
+
+  try {
+    const [resultado] = await pool.query(
+      `UPDATE cita SET estado = 'en_atencion'
+       WHERE id_cita = ? AND estado = 'en_espera'`,
+      [id_cita]
+    );
+
+    if (resultado.affectedRows === 0) {
+      return res.status(409).json({ mensaje: 'Solo se puede iniciar la atención de una cita en espera.' });
+    }
+
+    return res.json({ mensaje: 'Atención iniciada.' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ mensaje: 'Error del servidor al iniciar la atención.' });
+  }
+};
+
 const marcarNoAsistio = async (req, res) => {
   const { id_cita } = req.params;
 
   try {
     const [resultado] = await pool.query(
       `UPDATE cita SET estado = 'no_asistida'
-       WHERE id_cita = ? AND estado IN ('programada','confirmada','en_espera')`,
+       WHERE id_cita = ? AND estado IN ('programada','confirmada','en_espera','en_atencion')`,
       [id_cita]
     );
 
@@ -184,7 +205,7 @@ const generarFormula = async (req, res) => {
           (formula_id, medicamento_id, dosis, frecuencia, duracion, indicaciones)
          VALUES (?, ?, ?, ?, ?, ?)`,
         [idFormula, med.medicamento_id, med.dosis, med.frecuencia || null,
-         med.duracion || null, med.indicaciones || null]
+          med.duracion || null, med.indicaciones || null]
       );
     }
 
@@ -311,6 +332,6 @@ const generarIncapacidad = async (req, res) => {
 
 
 module.exports = {
-  agendaDelDoctor, atenderConsulta, marcarNoAsistio,
+  agendaDelDoctor, atenderConsulta, iniciarAtencion, marcarNoAsistio,
   listarMedicamentos, listarTiposExamen, generarFormula, generarOrdenExamen, generarIncapacidad
 };

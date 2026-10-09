@@ -1276,3 +1276,7 @@ select[disabled] {
   .cat-panel-izq { position: static; }
   .cat-serv { grid-template-columns: 1fr auto; }
 }
+
+.estado-badge.estado-en_espera { background: #fef3c7; color: #92400e; }
+.estado-badge.estado-en_atencion { background: #dbeafe; color: #1d4ed8; font-weight: 600; }
+.estado-badge.estado-atendida { background: #dcfce7; color: #166534; }

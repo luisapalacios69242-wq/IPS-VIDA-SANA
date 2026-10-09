@@ -27,7 +27,7 @@ const formatearEstado = (estado) => {
   const mapa = {
     programada: 'Programada',
     confirmada: 'Confirmada',
-    en_espera: 'En espera',
+    en_atencion: 'Atendiendo',
     atendida: 'Atendida',
     cancelada: 'Cancelada',
     no_asistida: 'No asistida'
@@ -44,7 +44,7 @@ const cargarProximaCita = async () => {
     const ahora = new Date();
 
     const proxima = citas
-      .filter(c => ['programada', 'confirmada', 'en_espera'].includes(c.estado))
+      .filter(c => ['programada', 'confirmada', 'en_espera', 'en_atencion'].includes(c.estado))
       .filter(c => new Date(`${c.fecha}T${c.hora}`) >= ahora)
       .sort((a, b) => new Date(`${a.fecha}T${a.hora}`) - new Date(`${b.fecha}T${b.hora}`))[0];
 

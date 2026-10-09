@@ -9,7 +9,7 @@ const Agendador = (() => {
     const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
     const MESES_ADELANTE = 3;
     const ESTADOS = {
-        programada: 'Programada', confirmada: 'Confirmada', en_espera: 'En espera',
+        en_espera: 'En espera', en_atencion: 'Atendiendo',
         atendida: 'Atendida', cancelada: 'Cancelada', no_asistida: 'No asistida'
     };
 
