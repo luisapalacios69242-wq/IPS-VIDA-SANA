@@ -462,3 +462,47 @@ html[data-theme="dark"] .doc-grupo-info small {
 html[data-theme="dark"] .doc-linea + .doc-linea {
   border-color: #334155;
 }
+
+html[data-theme="dark"] .doc-filtros,
+html[data-theme="dark"] .doc-vacio {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .doc-chip {
+  background: #334155;
+  border-color: #475569;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .doc-chip.activo {
+  background: #7fb4e8;
+  border-color: #7fb4e8;
+  color: #0f172a;
+}
+
+html[data-theme="dark"] .doc-mes {
+  color: #7fb4e8;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .doc-info small,
+html[data-theme="dark"] .doc-resumen {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .doc-tag-atencion { background: #1e3a8a; color: #bfdbfe; }
+html[data-theme="dark"] .doc-tag-formula { background: #14532d; color: #bbf7d0; }
+html[data-theme="dark"] .doc-tag-orden { background: #78350f; color: #fde68a; }
+html[data-theme="dark"] .doc-tag-incapacidad { background: #7f1d1d; color: #fecaca; }
+
+html[data-theme="dark"] .doc-btn {
+  background: transparent;
+  border-color: #7fb4e8;
+  color: #7fb4e8;
+}
+
+html[data-theme="dark"] .doc-btn:hover {
+  background: #7fb4e8;
+  color: #0f172a;
+}

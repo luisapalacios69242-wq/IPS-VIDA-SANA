@@ -1423,3 +1423,162 @@ select[disabled] {
 .doc-linea + .doc-linea {
   border-top: 1px solid #eef3f8;
 }
+
+/* ===== Mis documentos: filtros, etiquetas y botones ===== */
+#contenidoDocumentos {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.doc-filtros {
+  background: #fff;
+  border: 1px solid #e3ecf5;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(18, 63, 107, 0.06);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.doc-chip {
+  width: auto;
+  margin: 0;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  background: #f3f8fd;
+  color: #185fa5;
+  border: 1px solid #d6e6f5;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.doc-chip span {
+  margin-left: 4px;
+  font-weight: 700;
+}
+
+.doc-chip.activo {
+  background: #185fa5;
+  color: #fff;
+  border-color: #185fa5;
+}
+
+.doc-selects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.doc-selects select {
+  width: auto;
+  min-width: 210px;
+  margin: 0;
+}
+
+.doc-resumen {
+  font-size: 0.8rem;
+  color: #5f5e5a;
+  margin: 14px 4px 0;
+}
+
+.doc-mes {
+  margin: 20px 4px 8px;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #185fa5;
+  border-bottom: 1px solid #e3ecf5;
+  padding-bottom: 6px;
+}
+
+.doc-tag {
+  flex: 0 0 96px;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 0;
+  border-radius: 999px;
+}
+
+.doc-tag-atencion { background: #e6f1fb; color: #185fa5; }
+.doc-tag-formula { background: #dcfce7; color: #166534; }
+.doc-tag-orden { background: #fef3c7; color: #92400e; }
+.doc-tag-incapacidad { background: #fde2e2; color: #b91c1c; }
+
+.doc-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.doc-info small {
+  color: #5f5e5a;
+  font-size: 0.75rem;
+}
+
+.doc-btn {
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  border: 1px solid #185fa5;
+  color: #185fa5;
+  background: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.doc-btn:hover {
+  background: #185fa5;
+  color: #fff;
+}
+
+.doc-vacio {
+  background: #fff;
+  border: 1px dashed #d6e6f5;
+  border-radius: 12px;
+  padding: 28px;
+  text-align: center;
+  color: #5f5e5a;
+  margin-top: 14px;
+}
+
+.doc-paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 16px;
+  font-size: 0.85rem;
+}
+
+.doc-paginacion button {
+  width: auto;
+  margin: 0;
+  padding: 6px 14px;
+}
+
+.doc-paginacion button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+@media (max-width: 700px) {
+  .doc-linea {
+    flex-wrap: wrap;
+  }
+
+  .doc-grupo-cab {
+    flex-wrap: wrap;
+  }
+}
