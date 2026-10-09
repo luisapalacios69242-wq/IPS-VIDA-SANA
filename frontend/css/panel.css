@@ -1083,18 +1083,62 @@ select[disabled] {
 }
 
 /* ---------- Registros de usuarios ---------- */
-.registros-fila { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.registros-fila input { flex: 1; min-width: 220px; margin: 0; }
-.registros-fila select { width: auto; margin: 0; }
-.registros-fila button { width: auto; margin-top: 0; }
-.reg-contador { font-size: 0.85rem; color: #5f5e5a; margin: 6px 0; }
-.reg-tabla-envoltura { overflow-x: auto; }
-.reg-tabla { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: #fff; }
-.reg-tabla th, .reg-tabla td { padding: 8px 10px; border-bottom: 1px solid #e3e1d9; text-align: left; vertical-align: top; }
-.reg-tabla th { background: #f1efe8; font-weight: 600; }
-.reg-acciones { display: flex; gap: 6px; flex-wrap: wrap; }
-.reg-acciones button { width: auto; margin-top: 0; padding: 5px 9px; font-size: 0.75rem; }
-.reg-etiqueta { padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; white-space: nowrap; }
+.registros-filtros { max-width: 760px; margin: 0 auto 18px; text-align: center; }
+.registros-fila { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; }
+.registros-fila input { flex: 1 1 280px; width: auto; margin: 0; }
+.registros-fila select { flex: 0 0 auto; width: auto; margin: 0; }
+.registros-fila button { flex: 0 0 auto; width: auto; margin: 0; padding: 10px 24px; }
+.reg-mensaje { margin: 10px 0 0; }
+.reg-mensaje:empty { display: none; }
+.reg-mensaje.exito { color: #0f6e56; }
+
+.reg-contador { text-align: center; font-size: 0.85rem; color: #5f5e5a; margin: 0 0 14px; }
+.reg-vacio { text-align: center; color: #5f5e5a; padding: 24px 0; }
+
+.reg-lista-items { display: flex; flex-direction: column; gap: 10px; max-width: 980px; margin: 0 auto; }
+.reg-item {
+  display: grid; grid-template-columns: 48px 1fr auto; gap: 14px; align-items: center;
+  background: #fff; border: 1px solid #e3e1d9; border-radius: 12px; padding: 14px 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); transition: box-shadow 0.15s ease;
+}
+.reg-item:hover { box-shadow: 0 4px 14px rgba(24, 95, 165, 0.14); }
+
+.reg-avatar {
+  width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 1rem; color: #fff; background: #185fa5;
+}
+.reg-av-doctor { background: #0f6e56; }
+.reg-av-secretaria { background: #b9770e; }
+
+.reg-nombre { font-weight: 600; font-size: 1rem; color: #1f2d3d; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.reg-datos { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: 4px; font-size: 0.83rem; color: #3d3d3a; }
+.reg-datos b { font-weight: 600; color: #7a786f; margin-right: 4px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.reg-meta { margin-top: 6px; font-size: 0.78rem; color: #7a786f; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+.reg-rol-chip { padding: 2px 9px; border-radius: 10px; font-size: 0.7rem; font-weight: 600; background: #e6f1fb; color: #185fa5; }
+.reg-rol-doctor { background: #e1f5ee; color: #0f6e56; }
+.reg-rol-secretaria { background: #faeeda; color: #854f0b; }
+.reg-inactivo { background: #fcebeb; color: #a32d2d; }
+.reg-etiqueta { padding: 2px 9px; border-radius: 10px; font-size: 0.72rem; white-space: nowrap; }
 .reg-pendiente { background: #faeeda; color: #854f0b; }
 .reg-ok { background: #e1f5ee; color: #0f6e56; }
-.reg-mensaje.exito { color: #0f6e56; }
+
+.reg-acciones { display: flex; flex-direction: column; gap: 6px; min-width: 170px; }
+.reg-acciones button { width: 100%; margin: 0; padding: 7px 12px; font-size: 0.78rem; border-radius: 8px; white-space: nowrap; }
+.reg-btn-doc { background: #fff; color: #185fa5; border: 1px solid #185fa5; }
+.reg-btn-reset { background: #185fa5; color: #fff; border: 1px solid #185fa5; }
+
+.reg-paginacion { display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; margin: 20px 0 6px; }
+.reg-pag-btn {
+  width: auto; margin: 0; min-width: 38px; padding: 7px 12px; font-size: 0.85rem; border-radius: 8px;
+  background: #fff; color: #185fa5; border: 1px solid #c9d6e6;
+}
+.reg-pag-btn:hover:not(:disabled) { background: #eaf2fb; }
+.reg-pag-btn.activa { background: #185fa5; color: #fff; border-color: #185fa5; }
+.reg-pag-btn:disabled { opacity: 0.45; cursor: default; }
+.reg-pag-puntos { color: #888; padding: 0 2px; }
+
+@media (max-width: 720px) {
+  .reg-item { grid-template-columns: 44px 1fr; }
+  .reg-acciones { grid-column: 1 / -1; flex-direction: row; min-width: 0; }
+}
