@@ -1296,3 +1296,80 @@ select[disabled] {
 .dx-opcion strong { color: #185fa5; margin-right: 6px; }
 .dx-vacio { padding: 10px 12px; font-size: 0.85rem; color: #5f5e5a; }
 .dx-elegido { margin: 4px 0 8px; font-size: 0.8rem; color: #15803d; font-weight: 600; }
+
+/* ===== Mi horario (doctor): mejor uso de la pantalla ===== */
+#seccion-horario {
+  max-width: 1180px;
+}
+
+.horario-titulo {
+  color: #123f6b;
+  font-size: 1.05rem;
+  margin: 0 0 10px;
+}
+
+#seccion-horario .semana-horario {
+  max-width: none;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+#seccion-horario .dia-semana {
+  text-align: center;
+  align-items: center;
+  padding: 14px 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+
+.horario-grid {
+  display: grid;
+  grid-template-columns: minmax(360px, 1.1fr) minmax(320px, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+#seccion-horario .ayuda-calendario {
+  max-width: none;
+  margin: 0 0 12px;
+}
+
+#seccion-horario .calendario {
+  max-width: none;
+  margin: 0;
+  padding: 22px;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(18, 63, 107, 0.06);
+}
+
+#seccion-horario .cal-dia {
+  padding: 14px 0;
+  font-size: 0.95rem;
+}
+
+#seccion-horario .cal-semana span {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+#seccion-horario #detalleDia {
+  max-width: none;
+  margin: 0;
+  position: sticky;
+  top: 16px;
+}
+
+@media (max-width: 900px) {
+  .horario-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #seccion-horario .semana-horario {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  #seccion-horario #detalleDia {
+    position: static;
+  }
+}
