@@ -383,7 +383,7 @@ const actualizarServicio = async (req, res) => {
 };
 
 // ---------- CU1.3: Horarios y bloqueos ----------
-const DIA_A_WEEKDAY = { Lunes: 0, Martes: 1, Miercoles: 2, Jueves: 3, Viernes: 4, Sabado: 5 };
+const DIA_A_WEEKDAY = { Lunes: 0, Martes: 1, Miercoles: 2, Jueves: 3, Viernes: 4, Sabado: 5, Domingo: 6 };
 
 const asignarHorario = async (req, res) => {
   const { doctor_id, dia_semana, hora_inicio, hora_fin } = req.body;
@@ -563,7 +563,7 @@ const listarHorariosDoctor = async (req, res) => {
 
   try {
     const [horarios] = await pool.query(
-      'SELECT * FROM horario WHERE doctor_id = ? ORDER BY FIELD(dia_semana, "Lunes","Martes","Miercoles","Jueves","Viernes","Sabado"), hora_inicio',
+      'SELECT * FROM horario WHERE doctor_id = ? ORDER BY FIELD(dia_semana, "Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"), hora_inicio',
       [id_doctor]
     );
     const [bloqueos] = await pool.query(

@@ -368,7 +368,7 @@ document.getElementById('btnCrearServicio').addEventListener('click', async () =
 });
 
 // ---------- Horarios ----------
-const ORDEN_DIAS = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
+const ORDEN_DIAS = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];
 const DIA_BONITO = { Miercoles: 'Miércoles', Sabado: 'Sábado' };
 const diaBonito = (d) => DIA_BONITO[d] || d;
 
