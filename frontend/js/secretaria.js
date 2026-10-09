@@ -754,6 +754,12 @@ async function marcarPagada(id_factura) {
     }
 }
 
+const registrosSecretaria = Registros.montar({
+    contenedor: document.getElementById('contenedorRegistros'),
+    base: '/api/secretaria/registros',
+    conRol: false
+});
+
 // ---------- Navegación ----------
 document.querySelectorAll('.nav-item').forEach(boton => {
     boton.addEventListener('click', () => {
@@ -768,6 +774,7 @@ document.querySelectorAll('.nav-item').forEach(boton => {
             cargarConsultasPorFacturar();
             cargarFacturasDelDia();
         }
+        if (idSeccion === 'registros') registrosSecretaria.recargar();
     });
 });
 

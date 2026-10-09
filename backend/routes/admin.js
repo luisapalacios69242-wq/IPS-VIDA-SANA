@@ -30,4 +30,9 @@ router.get('/doctores/:id_doctor/horarios', listarHorariosDoctor);
 
 router.get('/informes', obtenerInformes);
 
+const registrosAdmin = require('../controllers/registroController').admin;
+router.get('/registros', registrosAdmin.listar);
+router.put('/registros/:id_usuario/restablecer-contrasena', registrosAdmin.restablecerContrasena);
+router.put('/registros/:id_usuario/documento', registrosAdmin.corregirDocumento);
+
 module.exports = router;

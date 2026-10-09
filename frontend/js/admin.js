@@ -22,6 +22,12 @@ window.addEventListener('pageshow', (evento) => {
   }
 });
 
+
+const registrosAdmin = Registros.montar({
+  contenedor: document.getElementById('contenedorRegistros'),
+  base: '/api/admin/registros',
+  conRol: true
+});
 // ---------- Navegación ----------
 document.querySelectorAll('.nav-item').forEach(boton => {
   boton.addEventListener('click', () => {
@@ -36,6 +42,7 @@ document.querySelectorAll('.nav-item').forEach(boton => {
     if (idSeccion === 'servicios') cargarServicios();
     if (idSeccion === 'horarios') cargarDoctoresParaHorario();
     if (idSeccion === 'gestionar') cargarUsuarios();
+    if (idSeccion === 'registros') registrosAdmin.recargar();
   });
 });
 
@@ -138,8 +145,8 @@ async function cargarEspecialidades() {
         </div>
         <div style="margin-top:8px; display:flex; gap:8px;">
           ${e.estado === 'activa'
-            ? `<button class="btn-desactivar" data-id="${e.id_especialidad}" style="background:#fff; color:#b91c1c; border:1px solid #d3d1c7;">Desactivar</button>`
-            : `<button class="btn-activar" data-id="${e.id_especialidad}">Activar</button>`}
+        ? `<button class="btn-desactivar" data-id="${e.id_especialidad}" style="background:#fff; color:#b91c1c; border:1px solid #d3d1c7;">Desactivar</button>`
+        : `<button class="btn-activar" data-id="${e.id_especialidad}">Activar</button>`}
           <button class="btn-ver-doctores" data-id="${e.id_especialidad}" style="background:#fff; color:#185fa5; border:1px solid #185fa5;">Ver doctores</button>
         </div>
         <div id="doctoresEsp-${e.id_especialidad}"></div>
@@ -249,8 +256,8 @@ async function cargarServicios() {
         </div>
         <div style="margin-top:8px; display:flex; gap:8px;">
           ${s.estado === 'activo'
-            ? `<button class="btn-desactivar-servicio" data-id="${s.id_servicio}" style="background:#fff; color:#b91c1c; border:1px solid #d3d1c7;">Desactivar</button>`
-            : `<button class="btn-activar-servicio" data-id="${s.id_servicio}">Activar</button>`}
+        ? `<button class="btn-desactivar-servicio" data-id="${s.id_servicio}" style="background:#fff; color:#b91c1c; border:1px solid #d3d1c7;">Desactivar</button>`
+        : `<button class="btn-activar-servicio" data-id="${s.id_servicio}">Activar</button>`}
           <button class="btn-editar-precio" data-id="${s.id_servicio}" data-precio="${s.precio}" style="background:#fff; color:#185fa5; border:1px solid #185fa5;">Cambiar precio</button>
         </div>
         <div id="editarServicio-${s.id_servicio}"></div>

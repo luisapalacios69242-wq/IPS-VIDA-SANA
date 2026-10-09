@@ -28,6 +28,7 @@
         <nav class="panel-sidebar">
             <button class="nav-item activo" data-seccion="usuarios">Registrar Usuario</button>
             <button class="nav-item" data-seccion="gestionar">Gestionar Usuarios</button>
+            <button class="nav-item" data-seccion="registros">Registros de Usuarios</button>
             <button class="nav-item" data-seccion="especialidades">Especialidades</button>
             <button class="nav-item" data-seccion="servicios">Servicios</button>
             <button class="nav-item" data-seccion="horarios">Horarios</button>
@@ -132,6 +133,11 @@
             <section id="seccion-gestionar" class="seccion oculto">
                 <h2>Gestionar usuarios</h2>
                 <div id="listaUsuarios"></div>
+            </section>
+
+            <section id="seccion-registros" class="seccion oculto">
+                <h2>Registros de usuarios</h2>
+                <div id="contenedorRegistros"></div>
             </section>
 
             <section id="seccion-especialidades" class="seccion oculto">
@@ -250,6 +256,8 @@
         </main>
     </div>
 
+
+    <script src="js/registros.js"></script>
     <script src="js/admin.js"></script>
 </body>
 

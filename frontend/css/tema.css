@@ -369,3 +369,11 @@ html[data-theme="dark"] .vs-esp-card .vs-icono {
 }
 
 /* El footer y el testimonio de bienvenida ya son oscuros de por sí: no necesitan cambios */
+
+html[data-theme="dark"] .reg-tabla { background: #1e1e1c; }
+html[data-theme="dark"] .reg-tabla th { background: #2a2a27; color: #e8e6df; }
+html[data-theme="dark"] .reg-tabla td { color: #e8e6df; border-bottom-color: #3a3a36; }
+html[data-theme="dark"] .reg-contador { color: #b4b2a9; }
+html[data-theme="dark"] .reg-pendiente { background: #4a3510; color: #f0c674; }
+html[data-theme="dark"] .reg-ok { background: #0f3a2e; color: #7fd8b8; }
+html[data-theme="dark"] .reg-mensaje.exito { color: #7fd8b8; }

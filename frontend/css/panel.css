@@ -1081,3 +1081,20 @@ select[disabled] {
 .campana-panel.oculto {
   display: none;
 }
+
+/* ---------- Registros de usuarios ---------- */
+.registros-fila { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.registros-fila input { flex: 1; min-width: 220px; margin: 0; }
+.registros-fila select { width: auto; margin: 0; }
+.registros-fila button { width: auto; margin-top: 0; }
+.reg-contador { font-size: 0.85rem; color: #5f5e5a; margin: 6px 0; }
+.reg-tabla-envoltura { overflow-x: auto; }
+.reg-tabla { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: #fff; }
+.reg-tabla th, .reg-tabla td { padding: 8px 10px; border-bottom: 1px solid #e3e1d9; text-align: left; vertical-align: top; }
+.reg-tabla th { background: #f1efe8; font-weight: 600; }
+.reg-acciones { display: flex; gap: 6px; flex-wrap: wrap; }
+.reg-acciones button { width: auto; margin-top: 0; padding: 5px 9px; font-size: 0.75rem; }
+.reg-etiqueta { padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; white-space: nowrap; }
+.reg-pendiente { background: #faeeda; color: #854f0b; }
+.reg-ok { background: #e1f5ee; color: #0f6e56; }
+.reg-mensaje.exito { color: #0f6e56; }
