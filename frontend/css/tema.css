@@ -410,3 +410,18 @@ html[data-theme="dark"] .esp-desc, html[data-theme="dark"] .esp-doc small { colo
 html[data-theme="dark"] .esp-doc { color: #cbd5e1; }
 html[data-theme="dark"] .esp-doctores { border-top-color: #334155; }
 html[data-theme="dark"] .esp-btn-peligro { background: transparent; color: #f87171; border-color: #4a2a2a; }
+
+
+/* ---------- Catálogo (modo oscuro) ---------- */
+html[data-theme="dark"] .cat-item { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+html[data-theme="dark"] .cat-item:hover { background: #24334a; border-color: #2c4d70; }
+html[data-theme="dark"] .cat-item.activo { background: #1b2b40; border-color: #7fb4e8; box-shadow: inset 3px 0 0 #7fb4e8; }
+html[data-theme="dark"] .cat-item-meta, html[data-theme="dark"] .cat-desc, html[data-theme="dark"] .cat-serv-desc { color: #94a3b8; }
+html[data-theme="dark"] .cat-tarjeta { background: #1e293b; border-color: #334155; box-shadow: none; }
+html[data-theme="dark"] .cat-titulo, html[data-theme="dark"] .cat-serv-nombre { color: #e2e8f0; }
+html[data-theme="dark"] .cat-serv { background: #172439; border-color: #334155; }
+html[data-theme="dark"] .cat-serv-edicion { background: #1b2b40; border-color: #2c4d70; }
+html[data-theme="dark"] .cat-serv-precio { color: #7fb4e8; }
+html[data-theme="dark"] .cat-doc { background: #0f3a2e; color: #7fd8b8; }
+html[data-theme="dark"] .cat-aviso.error { background: #3a1e1e; color: #f87171; }
+html[data-theme="dark"] .cat-aviso.exito { background: #0f3a2e; color: #7fd8b8; }

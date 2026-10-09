@@ -318,7 +318,12 @@ const eliminarEspecialidad = async (req, res) => {
 // ---------- CU9: Gestión de Servicios (catálogo para facturación) ----------
 const listarServiciosAdmin = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM servicio ORDER BY nombre');
+    const [rows] = await pool.query(
+      `SELECT s.*, e.nombre AS especialidad_nombre
+       FROM servicio s
+       LEFT JOIN especialidad e ON e.id_especialidad = s.especialidad_id
+       ORDER BY s.nombre`
+    );
     return res.json(rows);
   } catch (error) {
     console.error(error);
@@ -327,7 +332,7 @@ const listarServiciosAdmin = async (req, res) => {
 };
 
 const crearServicio = async (req, res) => {
-  const { nombre, descripcion, precio } = req.body;
+  const { nombre, descripcion, precio, especialidad_id } = req.body;
 
   if (!nombre || precio === undefined || precio === null || precio === '') {
     return res.status(400).json({ mensaje: 'El nombre y el precio son obligatorios.' });
@@ -339,13 +344,16 @@ const crearServicio = async (req, res) => {
 
   try {
     const [resultado] = await pool.query(
-      'INSERT INTO servicio (nombre, descripcion, precio) VALUES (?, ?, ?)',
-      [nombre, descripcion || null, precio]
+      'INSERT INTO servicio (nombre, descripcion, precio, especialidad_id) VALUES (?, ?, ?, ?)',
+      [nombre, descripcion || null, precio, especialidad_id || null]
     );
     return res.status(201).json({ mensaje: 'Servicio creado.', id_servicio: resultado.insertId });
   } catch (error) {
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ mensaje: 'Ese servicio ya existe.' });
+    }
+    if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+      return res.status(400).json({ mensaje: 'La especialidad indicada no existe.' });
     }
     console.error(error);
     return res.status(500).json({ mensaje: 'Error del servidor.' });
@@ -355,6 +363,11 @@ const crearServicio = async (req, res) => {
 const actualizarServicio = async (req, res) => {
   const { id_servicio } = req.params;
   const { nombre, descripcion, precio, estado } = req.body;
+
+  // La especialidad puede quedar en blanco a propósito (servicio general),
+  // por eso se detecta si vino en el cuerpo en lugar de usar COALESCE.
+  const cambiaEspecialidad = Object.prototype.hasOwnProperty.call(req.body, 'especialidad_id');
+  const especialidadId = cambiaEspecialidad ? (req.body.especialidad_id || null) : null;
 
   if (precio !== undefined && precio !== null && precio !== '' && Number(precio) < 0) {
     return res.status(400).json({ mensaje: 'El precio no puede ser negativo.' });
@@ -366,9 +379,10 @@ const actualizarServicio = async (req, res) => {
         nombre = COALESCE(?, nombre),
         descripcion = COALESCE(?, descripcion),
         precio = COALESCE(?, precio),
-        estado = COALESCE(?, estado)
+        estado = COALESCE(?, estado),
+        especialidad_id = IF(?, ?, especialidad_id)
        WHERE id_servicio = ?`,
-      [nombre, descripcion, precio, estado, id_servicio]
+      [nombre, descripcion, precio, estado, cambiaEspecialidad ? 1 : 0, especialidadId, id_servicio]
     );
 
     if (resultado.affectedRows === 0) {
@@ -377,6 +391,12 @@ const actualizarServicio = async (req, res) => {
 
     return res.json({ mensaje: 'Servicio actualizado.' });
   } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ mensaje: 'Ya existe un servicio con ese nombre.' });
+    }
+    if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+      return res.status(400).json({ mensaje: 'La especialidad indicada no existe.' });
+    }
     console.error(error);
     return res.status(500).json({ mensaje: 'Error del servidor.' });
   }

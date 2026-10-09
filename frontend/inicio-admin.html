@@ -29,8 +29,7 @@
             <button class="nav-item activo" data-seccion="usuarios">Registrar Usuario</button>
             <button class="nav-item" data-seccion="gestionar">Gestionar Usuarios</button>
             <button class="nav-item" data-seccion="registros">Ver Usuarios</button>
-            <button class="nav-item" data-seccion="especialidades">Especialidades</button>
-            <button class="nav-item" data-seccion="servicios">Servicios</button>
+            <button class="nav-item" data-seccion="especialidades">Especialidades y Servicios</button>
             <button class="nav-item" data-seccion="horarios">Horarios</button>
             <button class="nav-item" data-seccion="informes">Informes</button>
         </nav>
@@ -140,37 +139,9 @@
                 <div id="contenedorRegistros"></div>
             </section>
 
-            <section id="seccion-especialidades" class="seccion oculto">
-                <h2>Especialidades</h2>
-
-                <div class="esp-layout">
-                    <div class="tarjeta esp-form-card">
-                        <h3>Nueva especialidad</h3>
-                        <label>Nombre</label>
-                        <input type="text" id="espNombre" placeholder="Ej. Cardiología">
-                        <label>Descripción</label>
-                        <input type="text" id="espDescripcion" placeholder="Opcional">
-                        <button id="btnCrearEspecialidad">Crear especialidad</button>
-                        <p id="mensajeEspecialidad" class="error"></p>
-                    </div>
-
-                    <div id="listaEspecialidades"></div>
-                </div>
-            </section>
-
-            <section id="seccion-servicios" class="seccion oculto">
-                <h2>Servicios y precios</h2>
-                <div class="tarjeta" style="max-width:420px;">
-                    <label>Nombre</label>
-                    <input type="text" id="servNombre" placeholder="Ej. Consulta Medicina General">
-                    <label>Descripción</label>
-                    <input type="text" id="servDescripcion" placeholder="Opcional">
-                    <label>Precio</label>
-                    <input type="number" id="servPrecio" placeholder="Ej. 50000">
-                    <button id="btnCrearServicio">Crear servicio</button>
-                    <p id="mensajeServicio" class="error"></p>
-                </div>
-                <div id="listaServicios"></div>
+            <section id="seccion-catalogo" class="seccion oculto">
+                <h2>Especialidades y servicios</h2>
+                <div id="contenedorCatalogo"></div>
             </section>
 
             <section id="seccion-horarios" class="seccion oculto">

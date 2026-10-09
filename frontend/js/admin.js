@@ -38,8 +38,7 @@ document.querySelectorAll('.nav-item').forEach(boton => {
     document.querySelectorAll('.seccion').forEach(s => s.classList.add('oculto'));
     document.getElementById(`seccion-${idSeccion}`).classList.remove('oculto');
 
-    if (idSeccion === 'especialidades') cargarEspecialidades();
-    if (idSeccion === 'servicios') cargarServicios();
+    if (idSeccion === 'catalogo') cargarCatalogo();
     if (idSeccion === 'horarios') cargarDoctoresParaHorario();
     if (idSeccion === 'gestionar') cargarUsuarios();
     if (idSeccion === 'registros') registrosAdmin.recargar();
@@ -123,317 +122,541 @@ document.getElementById('btnRegistrarUsuario').addEventListener('click', async (
   }
 });
 
-// ---------- Especialidades ----------
-let especialidadesLista = [];
-let paginaEsp = 1;
-const POR_PAGINA_ESP = 6;
+// ---------- Especialidades y servicios (catálogo unificado) ----------
+const POR_PAGINA_CAT = 8;
 
-function dibujarEspecialidades() {
-  const contenedor = document.getElementById('listaEspecialidades');
+const cat = {
+  especialidades: [], servicios: [], doctores: [],
+  seleccion: null, pagina: 1,
+  editandoEsp: false, editandoServicio: null, agregandoServicio: false,
+  mensaje: '', mensajeOk: false
+};
 
-  if (especialidadesLista.length === 0) {
-    contenedor.innerHTML = '<p class="reg-vacio">Aún no hay especialidades creadas.</p>';
-    return;
+const formatoPrecio = (v) => `$${Number(v).toLocaleString('es-CO')}`;
+const valorCampo = (id) => document.getElementById(id).value.trim();
+
+function cerrarFormulariosCat() {
+  cat.editandoEsp = false;
+  cat.editandoServicio = null;
+  cat.agregandoServicio = false;
+  cat.mensaje = '';
+}
+
+function avisarCat(texto, ok = false) {
+  cat.mensaje = texto;
+  cat.mensajeOk = ok;
+  const el = document.getElementById('catMensaje');
+  if (!el) return;
+  el.textContent = texto;
+  el.className = `cat-aviso ${ok ? 'exito' : 'error'}`;
+  if (texto) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function catEnviar(url, metodo, cuerpo) {
+  try {
+    const respuesta = await fetch(`${API}${url}`, {
+      method: metodo,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cuerpo)
+    });
+    const datos = await respuesta.json();
+    return { ok: respuesta.ok, datos };
+  } catch (error) {
+    console.error(error);
+    return { ok: false, datos: { mensaje: 'No se pudo conectar con el servidor.' } };
   }
+}
 
-  const total = especialidadesLista.length;
-  const paginas = Math.ceil(total / POR_PAGINA_ESP);
-  if (paginaEsp > paginas) paginaEsp = paginas;
-  const inicio = (paginaEsp - 1) * POR_PAGINA_ESP;
-  const visibles = especialidadesLista.slice(inicio, inicio + POR_PAGINA_ESP);
+function especialidadesFiltradas() {
+  const texto = normalizarTexto(document.getElementById('catBuscar').value.trim());
+  if (!texto) return cat.especialidades;
+  return cat.especialidades.filter(e => {
+    if (normalizarTexto(e.nombre).includes(texto)) return true;
+    return cat.servicios.some(s =>
+      String(s.especialidad_id) === String(e.id_especialidad) && normalizarTexto(s.nombre).includes(texto)
+    );
+  });
+}
 
-  const tarjetasHtml = visibles.map(e => `
-    <article class="esp-card">
-      <div class="esp-cabecera">
-        <div>
-          <h3 class="esp-nombre">${escUsr(e.nombre)}</h3>
-          <p class="esp-desc">${escUsr(e.descripcion) || 'Sin descripción'}</p>
+function irAPaginaDeSeleccion() {
+  const indice = especialidadesFiltradas().findIndex(e => String(e.id_especialidad) === cat.seleccion);
+  if (indice >= 0) cat.pagina = Math.floor(indice / POR_PAGINA_CAT) + 1;
+}
+
+function seleccionarCat(valor) {
+  cat.seleccion = String(valor);
+  cerrarFormulariosCat();
+  dibujarListaCat();
+  dibujarDetalleCat();
+}
+
+function prepararCatalogo() {
+  if (document.getElementById('catLista')) return;
+
+  const contenedor = document.getElementById('contenedorCatalogo');
+  contenedor.innerHTML = `
+    <div class="cat-layout">
+      <aside class="cat-panel-izq">
+        <div class="tarjeta cat-buscador">
+          <input type="text" id="catBuscar" placeholder="Buscar especialidad o servicio">
+          <button type="button" data-accion="nueva">+ Nueva especialidad</button>
         </div>
-        <span class="reg-etiqueta ${e.estado === 'activa' ? 'reg-ok' : 'reg-inactivo'}">${escUsr(e.estado)}</span>
-      </div>
+        <div id="catLista"></div>
+      </aside>
+      <section id="catDetalle" class="cat-panel-der"></section>
+    </div>
+  `;
 
-      <div class="esp-acciones">
-        ${e.estado === 'activa'
-          ? `<button type="button" class="btn-desactivar esp-btn-peligro" data-id="${e.id_especialidad}">Desactivar</button>`
-          : `<button type="button" class="btn-activar" data-id="${e.id_especialidad}">Activar</button>`}
-        <button type="button" class="btn-ver-doctores reg-btn-doc" data-id="${e.id_especialidad}">Ver doctores</button>
-      </div>
+  document.getElementById('catBuscar').addEventListener('input', () => {
+    cat.pagina = 1;
+    dibujarListaCat();
+  });
 
-      <div id="doctoresEsp-${e.id_especialidad}" class="esp-doctores"></div>
-    </article>
-  `).join('');
+  contenedor.addEventListener('click', manejarClickCatalogo);
+}
 
-  let paginacionHtml = '';
+function dibujarListaCat() {
+  const zona = document.getElementById('catLista');
+  const filtradas = especialidadesFiltradas();
+  const total = filtradas.length;
+  const paginas = Math.max(1, Math.ceil(total / POR_PAGINA_CAT));
+  if (cat.pagina > paginas) cat.pagina = paginas;
+  const inicio = (cat.pagina - 1) * POR_PAGINA_CAT;
+  const visibles = filtradas.slice(inicio, inicio + POR_PAGINA_CAT);
+
+  const sinEspecialidad = cat.servicios.filter(s => !s.especialidad_id).length;
+
+  const itemGeneral = `
+    <button type="button" class="cat-item cat-item-general ${cat.seleccion === 'general' ? 'activo' : ''}" data-accion="seleccionar" data-id="general">
+      <span class="cat-item-nombre">Servicios generales</span>
+      <span class="cat-item-meta">${sinEspecialidad} servicio(s) sin especialidad</span>
+    </button>
+  `;
+
+  const items = visibles.map(e => {
+    const id = String(e.id_especialidad);
+    const nServicios = cat.servicios.filter(s => String(s.especialidad_id) === id).length;
+    const nDoctores = cat.doctores.filter(d => (d.especialidad_ids || '').split(',').includes(id)).length;
+    return `
+      <button type="button" class="cat-item ${cat.seleccion === id ? 'activo' : ''}" data-accion="seleccionar" data-id="${id}">
+        <span class="cat-item-nombre">${escUsr(e.nombre)}</span>
+        <span class="cat-item-meta">${nServicios} servicio(s) · ${nDoctores} doctor(es)</span>
+        ${e.estado !== 'activa' ? '<span class="reg-etiqueta reg-inactivo">inactiva</span>' : ''}
+      </button>
+    `;
+  }).join('');
+
+  let paginacion = '';
   if (paginas > 1) {
-    const numeros = numerosPaginaGestion(paginaEsp, paginas).map(n =>
+    const numeros = numerosPaginaGestion(cat.pagina, paginas).map(n =>
       n === '...'
         ? '<span class="reg-pag-puntos">…</span>'
-        : `<button type="button" class="reg-pag-btn ${n === paginaEsp ? 'activa' : ''}" data-pagina="${n}">${n}</button>`
+        : `<button type="button" class="reg-pag-btn ${n === cat.pagina ? 'activa' : ''}" data-accion="pagina" data-pagina="${n}">${n}</button>`
     ).join('');
 
-    paginacionHtml = `
+    paginacion = `
       <nav class="reg-paginacion">
-        <button type="button" class="reg-pag-btn" data-pagina="${paginaEsp - 1}" ${paginaEsp === 1 ? 'disabled' : ''}>‹ Anterior</button>
+        <button type="button" class="reg-pag-btn" data-accion="pagina" data-pagina="${cat.pagina - 1}" ${cat.pagina === 1 ? 'disabled' : ''}>‹</button>
         ${numeros}
-        <button type="button" class="reg-pag-btn" data-pagina="${paginaEsp + 1}" ${paginaEsp === paginas ? 'disabled' : ''}>Siguiente ›</button>
+        <button type="button" class="reg-pag-btn" data-accion="pagina" data-pagina="${cat.pagina + 1}" ${cat.pagina === paginas ? 'disabled' : ''}>›</button>
       </nav>
     `;
   }
 
-  contenedor.innerHTML = `
-    <p class="reg-contador" style="text-align:left;">Mostrando ${inicio + 1}–${inicio + visibles.length} de ${total} especialidad(es)</p>
-    <div class="esp-grid">${tarjetasHtml}</div>
-    ${paginacionHtml}
+  zona.innerHTML = `
+    ${itemGeneral}
+    <p class="reg-contador">${total} especialidad(es)</p>
+    ${items || '<p class="reg-vacio">Sin resultados.</p>'}
+    ${paginacion}
   `;
 }
 
-async function cargarEspecialidades() {
-  const contenedor = document.getElementById('listaEspecialidades');
-  if (especialidadesLista.length === 0) contenedor.innerHTML = '<p class="reg-vacio">Cargando...</p>';
+function filaServicioHtml(s) {
+  const id = String(s.id_servicio);
 
-  try {
-    const respuesta = await fetch(`${API}/api/admin/especialidades`);
-    const datos = await respuesta.json();
-    especialidadesLista = Array.isArray(datos) ? datos : [];
-    dibujarEspecialidades();
-  } catch (error) {
-    contenedor.innerHTML = '<p class="reg-vacio">No se pudieron cargar las especialidades.</p>';
-    console.error(error);
-  }
-}
-
-// Un solo listener para todos los botones de la lista (sigue funcionando al cambiar de página)
-document.getElementById('listaEspecialidades').addEventListener('click', (evento) => {
-  const boton = evento.target.closest('button');
-  if (!boton || boton.disabled) return;
-
-  if (boton.classList.contains('reg-pag-btn')) {
-    paginaEsp = Number(boton.dataset.pagina);
-    dibujarEspecialidades();
-    document.getElementById('listaEspecialidades').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    return;
-  }
-
-  if (boton.classList.contains('btn-desactivar')) {
-    cambiarEstadoEspecialidad(boton.dataset.id, 'inactiva');
-  } else if (boton.classList.contains('btn-activar')) {
-    cambiarEstadoEspecialidad(boton.dataset.id, 'activa');
-  } else if (boton.classList.contains('btn-ver-doctores')) {
-    const zona = document.getElementById(`doctoresEsp-${boton.dataset.id}`);
-    if (zona.innerHTML.trim()) {
-      zona.innerHTML = '';
-    } else {
-      verDoctoresDeEspecialidad(boton.dataset.id);
-    }
-  }
-});
-
-async function cambiarEstadoEspecialidad(id, nuevoEstado) {
-  try {
-    await fetch(`${API}/api/admin/especialidades/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ estado: nuevoEstado })
-    });
-    cargarEspecialidades();
-  } catch (error) {
-    alert('No se pudo actualizar la especialidad.');
-    console.error(error);
-  }
-}
-
-async function verDoctoresDeEspecialidad(id) {
-  const contenedor = document.getElementById(`doctoresEsp-${id}`);
-  contenedor.textContent = 'Cargando...';
-
-  try {
-    const respuesta = await fetch(`${API}/api/citas/doctores/${id}`);
-    const doctores = await respuesta.json();
-
-    contenedor.innerHTML = doctores.length
-      ? doctores.map(d => `
-          <div class="esp-doc">Dr(a). ${escUsr(d.nombres)} ${escUsr(d.apellidos)}<small>${escUsr(d.tarjeta_profesional)}</small></div>
-        `).join('')
-      : '<p class="esp-doc" style="margin:0;">Ningún doctor tiene esta especialidad asignada todavía.</p>';
-
-  } catch (error) {
-    contenedor.textContent = 'No se pudieron cargar los doctores.';
-    console.error(error);
-  }
-}
-
-document.getElementById('btnCrearEspecialidad').addEventListener('click', async () => {
-  const mensaje = document.getElementById('mensajeEspecialidad');
-  const nombre = document.getElementById('espNombre').value;
-  const descripcion = document.getElementById('espDescripcion').value;
-  mensaje.textContent = '';
-
-  if (!nombre) {
-    mensaje.textContent = 'El nombre es obligatorio.';
-    return;
-  }
-
-  try {
-    const respuesta = await fetch(`${API}/api/admin/especialidades`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre, descripcion })
-    });
-
-    const datos = await respuesta.json();
-
-    if (!respuesta.ok) {
-      mensaje.textContent = datos.mensaje;
-      return;
-    }
-
-    document.getElementById('espNombre').value = '';
-    document.getElementById('espDescripcion').value = '';
-    cargarEspecialidades();
-
-  } catch (error) {
-    mensaje.textContent = 'No se pudo crear la especialidad.';
-    console.error(error);
-  }
-});
-
-// ---------- Servicios ----------
-async function cargarServicios() {
-  const contenedor = document.getElementById('listaServicios');
-  contenedor.textContent = 'Cargando...';
-
-  try {
-    const respuesta = await fetch(`${API}/api/admin/servicios`);
-    const servicios = await respuesta.json();
-
-    contenedor.innerHTML = servicios.map(s => `
-      <div class="tarjeta" style="max-width:500px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <strong>${s.nombre}</strong> — $${Number(s.precio).toLocaleString('es-CO')}<br>
-            <span style="font-size:0.8rem; color:#5f5e5a;">${s.descripcion || ''}</span>
-          </div>
-          <span class="estado-badge">${s.estado}</span>
-        </div>
-        <div style="margin-top:8px; display:flex; gap:8px;">
-          ${s.estado === 'activo'
-        ? `<button class="btn-desactivar-servicio" data-id="${s.id_servicio}" style="background:#fff; color:#b91c1c; border:1px solid #d3d1c7;">Desactivar</button>`
-        : `<button class="btn-activar-servicio" data-id="${s.id_servicio}">Activar</button>`}
-          <button class="btn-editar-precio" data-id="${s.id_servicio}" data-precio="${s.precio}" style="background:#fff; color:#185fa5; border:1px solid #185fa5;">Cambiar precio</button>
-        </div>
-        <div id="editarServicio-${s.id_servicio}"></div>
-      </div>
+  if (cat.editandoServicio === id) {
+    const opciones = cat.especialidades.map(e => `
+      <option value="${e.id_especialidad}" ${String(s.especialidad_id) === String(e.id_especialidad) ? 'selected' : ''}>${escUsr(e.nombre)}</option>
     `).join('');
 
-    document.querySelectorAll('.btn-desactivar-servicio').forEach(boton => {
-      boton.addEventListener('click', () => cambiarEstadoServicio(boton.dataset.id, 'inactivo'));
-    });
-    document.querySelectorAll('.btn-activar-servicio').forEach(boton => {
-      boton.addEventListener('click', () => cambiarEstadoServicio(boton.dataset.id, 'activo'));
-    });
-    document.querySelectorAll('.btn-editar-precio').forEach(boton => {
-      boton.addEventListener('click', () => mostrarEdicionPrecio(boton.dataset.id, boton.dataset.precio));
-    });
-
-  } catch (error) {
-    contenedor.textContent = 'No se pudieron cargar los servicios.';
-    console.error(error);
-  }
-}
-
-async function cambiarEstadoServicio(id, nuevoEstado) {
-  try {
-    await fetch(`${API}/api/admin/servicios/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ estado: nuevoEstado })
-    });
-    cargarServicios();
-  } catch (error) {
-    alert('No se pudo actualizar el servicio.');
-    console.error(error);
-  }
-}
-
-function mostrarEdicionPrecio(id, precioActual) {
-  const contenedor = document.getElementById(`editarServicio-${id}`);
-
-  if (contenedor.innerHTML.trim()) {
-    contenedor.innerHTML = '';
-    return;
+    return `
+      <div class="cat-serv cat-serv-edicion">
+        <div class="gest-grid">
+          <div class="gest-campo">
+            <label>Nombre</label>
+            <input type="text" id="catServNombre" value="${escUsr(s.nombre)}">
+          </div>
+          <div class="gest-campo">
+            <label>Precio</label>
+            <input type="number" min="0" id="catServPrecio" value="${escUsr(s.precio)}">
+          </div>
+          <div class="gest-campo gest-full">
+            <label>Descripción</label>
+            <input type="text" id="catServDesc" value="${escUsr(s.descripcion)}">
+          </div>
+          <div class="gest-campo gest-full">
+            <label>Especialidad</label>
+            <select id="catServEsp">
+              <option value="">Sin especialidad (servicio general)</option>
+              ${opciones}
+            </select>
+          </div>
+        </div>
+        <div class="gest-pie">
+          <button type="button" class="gest-btn-cancelar" data-accion="cancelar-serv">Cancelar</button>
+          <button type="button" data-accion="guardar-serv" data-id="${id}">Guardar cambios</button>
+        </div>
+      </div>
+    `;
   }
 
-  contenedor.innerHTML = `
-    <div style="border-top:1px solid #e5e3da; margin-top:8px; padding-top:8px;">
-      <label>Nuevo precio</label>
-      <input type="number" id="nuevoPrecio-${id}" value="${precioActual}">
-      <button onclick="guardarPrecio(${id})">Guardar</button>
-      <p id="mensajePrecio-${id}" class="error"></p>
+  const activo = s.estado === 'activo';
+  return `
+    <div class="cat-serv ${activo ? '' : 'cat-serv-off'}">
+      <div>
+        <span class="cat-serv-nombre">${escUsr(s.nombre)}</span>
+        <span class="cat-serv-desc">${escUsr(s.descripcion) || 'Sin descripción'}</span>
+      </div>
+      <div class="cat-serv-precio">${formatoPrecio(s.precio)}</div>
+      <span class="reg-etiqueta ${activo ? 'reg-ok' : 'reg-inactivo'}">${escUsr(s.estado)}</span>
+      <div class="cat-serv-acc">
+        <button type="button" class="reg-btn-doc" data-accion="editar-serv" data-id="${id}">Editar</button>
+        <button type="button" class="${activo ? 'esp-btn-peligro' : ''}" data-accion="toggle-serv" data-id="${id}" data-estado="${activo ? 'inactivo' : 'activo'}">${activo ? 'Desactivar' : 'Activar'}</button>
+      </div>
     </div>
   `;
 }
 
-async function guardarPrecio(id) {
-  const mensaje = document.getElementById(`mensajePrecio-${id}`);
-  const precio = document.getElementById(`nuevoPrecio-${id}`).value;
+function dibujarDetalleCat() {
+  const zona = document.getElementById('catDetalle');
+  const aviso = `<p id="catMensaje" class="cat-aviso ${cat.mensajeOk ? 'exito' : 'error'}">${escUsr(cat.mensaje)}</p>`;
 
-  try {
-    const respuesta = await fetch(`${API}/api/admin/servicios/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ precio })
-    });
-
-    const datos = await respuesta.json();
-
-    if (!respuesta.ok) {
-      mensaje.textContent = datos.mensaje;
-      return;
-    }
-
-    cargarServicios();
-  } catch (error) {
-    mensaje.textContent = 'No se pudo actualizar el precio.';
-    console.error(error);
-  }
-}
-
-document.getElementById('btnCrearServicio').addEventListener('click', async () => {
-  const mensaje = document.getElementById('mensajeServicio');
-  const nombre = document.getElementById('servNombre').value;
-  const descripcion = document.getElementById('servDescripcion').value;
-  const precio = document.getElementById('servPrecio').value;
-  mensaje.textContent = '';
-
-  if (!nombre || !precio) {
-    mensaje.textContent = 'El nombre y el precio son obligatorios.';
+  // ----- Formulario de nueva especialidad -----
+  if (cat.seleccion === 'nueva') {
+    zona.innerHTML = `
+      ${aviso}
+      <div class="cat-tarjeta">
+        <h3 class="cat-titulo">Nueva especialidad</h3>
+        <p class="cat-desc">Cuando la crees podrás agregarle sus servicios.</p>
+        <div class="gest-grid" style="margin-top:16px;">
+          <div class="gest-campo">
+            <label>Nombre</label>
+            <input type="text" id="catNuevaNombre" placeholder="Ej. Cardiología">
+          </div>
+          <div class="gest-campo">
+            <label>Descripción</label>
+            <input type="text" id="catNuevaDesc" placeholder="Opcional">
+          </div>
+        </div>
+        <div class="gest-pie">
+          <button type="button" class="gest-btn-cancelar" data-accion="cancelar-nueva">Cancelar</button>
+          <button type="button" data-accion="crear-esp">Crear especialidad</button>
+        </div>
+      </div>
+    `;
     return;
   }
 
-  try {
-    const respuesta = await fetch(`${API}/api/admin/servicios`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre, descripcion, precio })
+  const esGeneral = cat.seleccion === 'general';
+  const esp = esGeneral ? null : cat.especialidades.find(e => String(e.id_especialidad) === cat.seleccion);
+
+  if (!esGeneral && !esp) {
+    zona.innerHTML = '<div class="cat-tarjeta"><p class="reg-vacio">Selecciona una especialidad de la lista.</p></div>';
+    return;
+  }
+
+  const servicios = cat.servicios.filter(s =>
+    esGeneral ? !s.especialidad_id : String(s.especialidad_id) === cat.seleccion
+  );
+
+  // ----- Cabecera -----
+  let cabeceraHtml;
+  if (esGeneral) {
+    cabeceraHtml = `
+      <div class="cat-cabecera">
+        <div>
+          <h3 class="cat-titulo">Servicios generales</h3>
+          <p class="cat-desc">Servicios que no pertenecen a una especialidad en particular, como procedimientos.</p>
+        </div>
+      </div>
+    `;
+  } else if (cat.editandoEsp) {
+    cabeceraHtml = `
+      <h3 class="cat-titulo">Editar especialidad</h3>
+      <div class="gest-grid" style="margin-top:14px;">
+        <div class="gest-campo">
+          <label>Nombre</label>
+          <input type="text" id="catEspNombre" value="${escUsr(esp.nombre)}">
+        </div>
+        <div class="gest-campo">
+          <label>Descripción</label>
+          <input type="text" id="catEspDesc" value="${escUsr(esp.descripcion)}">
+        </div>
+      </div>
+      <div class="gest-pie">
+        <button type="button" class="gest-btn-cancelar" data-accion="cancelar-esp">Cancelar</button>
+        <button type="button" data-accion="guardar-esp">Guardar cambios</button>
+      </div>
+    `;
+  } else {
+    const activa = esp.estado === 'activa';
+    cabeceraHtml = `
+      <div class="cat-cabecera">
+        <div>
+          <h3 class="cat-titulo">${escUsr(esp.nombre)}</h3>
+          <p class="cat-desc">${escUsr(esp.descripcion) || 'Sin descripción'}</p>
+        </div>
+        <div class="cat-cab-acc">
+          <span class="reg-etiqueta ${activa ? 'reg-ok' : 'reg-inactivo'}">${escUsr(esp.estado)}</span>
+          <button type="button" class="reg-btn-doc" data-accion="editar-esp">Editar</button>
+          <button type="button" class="${activa ? 'esp-btn-peligro' : ''}" data-accion="toggle-esp">${activa ? 'Desactivar' : 'Activar'}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  // ----- Servicios -----
+  const formNuevoServicio = cat.agregandoServicio ? `
+    <div class="cat-serv cat-serv-edicion">
+      <div class="gest-grid">
+        <div class="gest-campo">
+          <label>Nombre</label>
+          <input type="text" id="catServNombre" placeholder="Ej. Consulta de control">
+        </div>
+        <div class="gest-campo">
+          <label>Precio</label>
+          <input type="number" min="0" id="catServPrecio" placeholder="Ej. 50000">
+        </div>
+        <div class="gest-campo gest-full">
+          <label>Descripción</label>
+          <input type="text" id="catServDesc" placeholder="Opcional">
+        </div>
+      </div>
+      <div class="gest-pie">
+        <button type="button" class="gest-btn-cancelar" data-accion="cancelar-serv">Cancelar</button>
+        <button type="button" data-accion="guardar-nuevo-serv">Crear servicio</button>
+      </div>
+    </div>
+  ` : '';
+
+  const serviciosHtml = `
+    <div class="cat-seccion-cab">
+      <h4 class="gest-titulo">Servicios (${servicios.length})</h4>
+      <button type="button" class="reg-btn-doc cat-btn-chico" data-accion="agregar-serv">+ Agregar servicio</button>
+    </div>
+    ${formNuevoServicio}
+    ${servicios.length
+      ? servicios.map(filaServicioHtml).join('')
+      : (cat.agregandoServicio ? '' : '<p class="reg-vacio" style="text-align:left; padding:6px 0;">Aún no hay servicios aquí.</p>')}
+  `;
+
+  // ----- Doctores (solo en especialidades) -----
+  let doctoresHtml = '';
+  if (!esGeneral) {
+    const doctores = cat.doctores.filter(d => (d.especialidad_ids || '').split(',').includes(cat.seleccion));
+    doctoresHtml = `
+      <div class="cat-seccion-cab">
+        <h4 class="gest-titulo">Doctores (${doctores.length})</h4>
+      </div>
+      ${doctores.length
+        ? `<div class="cat-docs">${doctores.map(d => `
+            <span class="cat-doc">Dr(a). ${escUsr(d.nombres)} ${escUsr(d.apellidos)}<small>${escUsr(d.tarjeta_profesional)}</small></span>
+          `).join('')}</div>`
+        : '<p class="reg-vacio" style="text-align:left; padding:6px 0;">Ningún doctor tiene esta especialidad todavía. Asígnala desde Gestionar Usuarios.</p>'}
+    `;
+  }
+
+  zona.innerHTML = `
+    ${aviso}
+    <div class="cat-tarjeta">
+      ${cabeceraHtml}
+      ${serviciosHtml}
+      ${doctoresHtml}
+    </div>
+  `;
+}
+
+async function manejarClickCatalogo(evento) {
+  const boton = evento.target.closest('[data-accion]');
+  if (!boton || boton.disabled) return;
+
+  const accion = boton.dataset.accion;
+  const id = boton.dataset.id;
+  const esp = cat.especialidades.find(e => String(e.id_especialidad) === cat.seleccion);
+
+  // ----- Navegación de la lista -----
+  if (accion === 'pagina') {
+    cat.pagina = Number(boton.dataset.pagina);
+    dibujarListaCat();
+    return;
+  }
+  if (accion === 'seleccionar') { seleccionarCat(id); return; }
+  if (accion === 'nueva') {
+    seleccionarCat('nueva');
+    const campo = document.getElementById('catNuevaNombre');
+    if (campo) campo.focus();
+    return;
+  }
+  if (accion === 'cancelar-nueva') {
+    seleccionarCat(cat.especialidades.length ? String(cat.especialidades[0].id_especialidad) : 'general');
+    return;
+  }
+
+  // ----- Abrir / cerrar formularios -----
+  if (accion === 'editar-esp') { cerrarFormulariosCat(); cat.editandoEsp = true; dibujarDetalleCat(); return; }
+  if (accion === 'cancelar-esp' || accion === 'cancelar-serv') { cerrarFormulariosCat(); dibujarDetalleCat(); return; }
+  if (accion === 'agregar-serv') {
+    cerrarFormulariosCat();
+    cat.agregandoServicio = true;
+    dibujarDetalleCat();
+    document.getElementById('catServNombre').focus();
+    return;
+  }
+  if (accion === 'editar-serv') { cerrarFormulariosCat(); cat.editandoServicio = id; dibujarDetalleCat(); return; }
+
+  // ----- Crear especialidad -----
+  if (accion === 'crear-esp') {
+    const nombre = valorCampo('catNuevaNombre');
+    if (!nombre) { avisarCat('El nombre de la especialidad es obligatorio.'); return; }
+
+    const r = await catEnviar('/api/admin/especialidades', 'POST', { nombre, descripcion: valorCampo('catNuevaDesc') });
+    if (!r.ok) { avisarCat(r.datos.mensaje || 'No se pudo crear la especialidad.'); return; }
+
+    cerrarFormulariosCat();
+    document.getElementById('catBuscar').value = '';
+    cat.seleccion = String(r.datos.id_especialidad);
+    cat.mensaje = 'Especialidad creada. Ahora puedes agregarle servicios.';
+    cat.mensajeOk = true;
+    await recargarCatalogo();
+    irAPaginaDeSeleccion();
+    dibujarListaCat();
+    cargarChecksEspecialidades();
+    return;
+  }
+
+  // ----- Editar especialidad -----
+  if (accion === 'guardar-esp') {
+    const nombre = valorCampo('catEspNombre');
+    if (!nombre) { avisarCat('El nombre es obligatorio.'); return; }
+
+    const r = await catEnviar(`/api/admin/especialidades/${cat.seleccion}`, 'PUT', {
+      nombre, descripcion: valorCampo('catEspDesc')
     });
+    if (!r.ok) { avisarCat(r.datos.mensaje || 'No se pudo guardar.'); return; }
 
-    const datos = await respuesta.json();
+    cerrarFormulariosCat();
+    cat.mensaje = 'Especialidad actualizada.';
+    cat.mensajeOk = true;
+    await recargarCatalogo();
+    cargarChecksEspecialidades();
+    return;
+  }
 
-    if (!respuesta.ok) {
-      mensaje.textContent = datos.mensaje;
+  // ----- Activar / desactivar especialidad -----
+  if (accion === 'toggle-esp') {
+    const nuevoEstado = esp.estado === 'activa' ? 'inactiva' : 'activa';
+    if (nuevoEstado === 'inactiva' &&
+      !confirm(`¿Desactivar la especialidad "${esp.nombre}"?\n\nSus servicios y doctores no se modifican. Podrás reactivarla cuando quieras.`)) {
       return;
     }
 
-    document.getElementById('servNombre').value = '';
-    document.getElementById('servDescripcion').value = '';
-    document.getElementById('servPrecio').value = '';
-    cargarServicios();
+    const r = await catEnviar(`/api/admin/especialidades/${cat.seleccion}`, 'PUT', { estado: nuevoEstado });
+    if (!r.ok) { avisarCat(r.datos.mensaje || 'No se pudo actualizar.'); return; }
 
+    cerrarFormulariosCat();
+    cat.mensaje = nuevoEstado === 'activa' ? 'Especialidad activada.' : 'Especialidad desactivada.';
+    cat.mensajeOk = true;
+    await recargarCatalogo();
+    cargarChecksEspecialidades();
+    return;
+  }
+
+  // ----- Crear servicio -----
+  if (accion === 'guardar-nuevo-serv') {
+    const nombre = valorCampo('catServNombre');
+    const precio = valorCampo('catServPrecio');
+    if (!nombre || precio === '') { avisarCat('El nombre y el precio son obligatorios.'); return; }
+    if (Number(precio) < 0) { avisarCat('El precio no puede ser negativo.'); return; }
+
+    const r = await catEnviar('/api/admin/servicios', 'POST', {
+      nombre, precio,
+      descripcion: valorCampo('catServDesc'),
+      especialidad_id: cat.seleccion === 'general' ? null : Number(cat.seleccion)
+    });
+    if (!r.ok) { avisarCat(r.datos.mensaje || 'No se pudo crear el servicio.'); return; }
+
+    cerrarFormulariosCat();
+    cat.mensaje = 'Servicio creado.';
+    cat.mensajeOk = true;
+    await recargarCatalogo();
+    return;
+  }
+
+  // ----- Editar servicio -----
+  if (accion === 'guardar-serv') {
+    const nombre = valorCampo('catServNombre');
+    const precio = valorCampo('catServPrecio');
+    if (!nombre || precio === '') { avisarCat('El nombre y el precio son obligatorios.'); return; }
+    if (Number(precio) < 0) { avisarCat('El precio no puede ser negativo.'); return; }
+
+    const espElegida = document.getElementById('catServEsp').value;
+    const r = await catEnviar(`/api/admin/servicios/${id}`, 'PUT', {
+      nombre, precio,
+      descripcion: valorCampo('catServDesc'),
+      especialidad_id: espElegida === '' ? null : Number(espElegida)
+    });
+    if (!r.ok) { avisarCat(r.datos.mensaje || 'No se pudo guardar el servicio.'); return; }
+
+    cerrarFormulariosCat();
+    cat.mensaje = 'Servicio actualizado.';
+    cat.mensajeOk = true;
+    await recargarCatalogo();
+    return;
+  }
+
+  // ----- Activar / desactivar servicio -----
+  if (accion === 'toggle-serv') {
+    const r = await catEnviar(`/api/admin/servicios/${id}`, 'PUT', { estado: boton.dataset.estado });
+    if (!r.ok) { avisarCat(r.datos.mensaje || 'No se pudo actualizar el servicio.'); return; }
+
+    cerrarFormulariosCat();
+    cat.mensaje = boton.dataset.estado === 'activo' ? 'Servicio activado.' : 'Servicio desactivado.';
+    cat.mensajeOk = true;
+    await recargarCatalogo();
+  }
+}
+
+async function recargarCatalogo() {
+  const [especialidades, servicios, usuarios] = await Promise.all([
+    fetch(`${API}/api/admin/especialidades`).then(r => r.json()),
+    fetch(`${API}/api/admin/servicios`).then(r => r.json()),
+    fetch(`${API}/api/admin/usuarios`).then(r => r.json())
+  ]);
+
+  cat.especialidades = Array.isArray(especialidades) ? especialidades : [];
+  cat.servicios = Array.isArray(servicios) ? servicios : [];
+  cat.doctores = (Array.isArray(usuarios) ? usuarios : []).filter(u => u.rol === 'doctor');
+
+  const seleccionValida = cat.seleccion === 'general' || cat.seleccion === 'nueva' ||
+    cat.especialidades.some(e => String(e.id_especialidad) === cat.seleccion);
+
+  if (!seleccionValida) {
+    cat.seleccion = cat.especialidades.length ? String(cat.especialidades[0].id_especialidad) : 'general';
+  }
+
+  dibujarListaCat();
+  dibujarDetalleCat();
+}
+
+async function cargarCatalogo() {
+  prepararCatalogo();
+  try {
+    await recargarCatalogo();
   } catch (error) {
-    mensaje.textContent = 'No se pudo crear el servicio.';
+    document.getElementById('catDetalle').innerHTML = '<p class="reg-vacio">No se pudo cargar el catálogo.</p>';
     console.error(error);
   }
-});
+}
 
 // ---------- Horarios ----------
 const ORDEN_DIAS = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];

@@ -1212,3 +1212,67 @@ select[disabled] {
   .esp-layout { grid-template-columns: 1fr; }
   .esp-form-card { position: static; }
 }
+
+/* ---------- Especialidades y servicios (catálogo unificado) ---------- */
+.cat-layout { display: grid; grid-template-columns: 340px 1fr; gap: 22px; align-items: start; max-width: 1200px; margin: 0 auto; }
+.cat-panel-izq { position: sticky; top: 16px; }
+
+.cat-buscador { display: flex; flex-direction: column; gap: 10px; margin: 0 0 12px; }
+.cat-buscador input, .cat-buscador button { width: 100%; margin: 0; }
+
+.cat-item {
+  position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+  width: 100%; margin: 0 0 8px; padding: 12px 14px; background: #fff; color: #1f2d3d;
+  border: 1px solid #e3e1d9; border-radius: 10px; text-align: left; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.cat-item:hover { border-color: #b9c8da; background: #f7fafd; }
+.cat-item.activo { border-color: #185fa5; background: #e6f1fb; box-shadow: inset 3px 0 0 #185fa5; }
+.cat-item-general { border-style: dashed; }
+.cat-item-nombre { font-weight: 600; font-size: 0.95rem; }
+.cat-item-meta { font-size: 0.76rem; color: #7a786f; font-weight: 400; }
+.cat-item .reg-etiqueta { position: absolute; top: 12px; right: 12px; }
+
+.cat-panel-izq .reg-contador { text-align: left; margin: 10px 0 8px; }
+.cat-panel-izq .reg-paginacion { margin: 12px 0 0; }
+
+.cat-tarjeta {
+  background: #fff; border: 1px solid #e3e1d9; border-radius: 14px; padding: 22px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.cat-cabecera { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+.cat-titulo { margin: 0; font-size: 1.25rem; color: #1f2d3d; }
+.cat-desc { margin: 4px 0 0; color: #7a786f; font-size: 0.88rem; }
+.cat-cab-acc { display: flex; align-items: center; gap: 8px; }
+.cat-cab-acc button { width: auto; margin: 0; padding: 7px 16px; font-size: 0.8rem; border-radius: 8px; }
+
+.cat-seccion-cab { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin: 24px 0 10px; }
+.cat-seccion-cab .gest-titulo { margin: 0; }
+.cat-btn-chico { width: auto; margin: 0; padding: 6px 14px; font-size: 0.78rem; border-radius: 8px; }
+
+.cat-serv {
+  display: grid; grid-template-columns: 1fr auto auto auto; gap: 12px; align-items: center;
+  padding: 12px 14px; margin-bottom: 8px; border: 1px solid #e3e1d9; border-radius: 10px; background: #fcfbf8;
+}
+.cat-serv-nombre { display: block; font-weight: 600; font-size: 0.92rem; }
+.cat-serv-desc { display: block; font-size: 0.78rem; color: #7a786f; margin-top: 2px; }
+.cat-serv-precio { font-weight: 700; color: #185fa5; white-space: nowrap; }
+.cat-serv-acc { display: flex; gap: 6px; }
+.cat-serv-acc button { width: auto; margin: 0; padding: 5px 12px; font-size: 0.75rem; border-radius: 8px; }
+.cat-serv-off { opacity: 0.6; }
+.cat-serv-edicion { display: block; background: #f7fafd; border-color: #b9c8da; }
+
+.cat-docs { display: flex; flex-wrap: wrap; gap: 8px; }
+.cat-doc { padding: 6px 14px; border-radius: 999px; background: #e1f5ee; color: #0f6e56; font-size: 0.82rem; font-weight: 500; }
+.cat-doc small { opacity: 0.75; margin-left: 8px; }
+
+.cat-aviso { margin: 0 0 12px; padding: 10px 14px; border-radius: 8px; font-size: 0.88rem; }
+.cat-aviso:empty { display: none; }
+.cat-aviso.error { background: #fcebeb; color: #a32d2d; }
+.cat-aviso.exito { background: #e1f5ee; color: #0f6e56; }
+
+@media (max-width: 980px) {
+  .cat-layout { grid-template-columns: 1fr; }
+  .cat-panel-izq { position: static; }
+  .cat-serv { grid-template-columns: 1fr auto; }
+}
