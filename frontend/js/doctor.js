@@ -24,11 +24,12 @@ window.addEventListener('pageshow', (evento) => {
 
 const formatearEstado = (estado) => {
     const mapa = {
-        programada: 'Programada', confirmada: 'Confirmada', en_espera: 'En espera', en_atencion: 'Atendiendo', cancelada: 'Cancelada', no_asistida: 'No asistida'
+        programada: 'Programada', confirmada: 'Confirmada', en_espera: 'En espera',
+        en_atencion: 'Atendiendo', atendida: 'Atendida',
+        cancelada: 'Cancelada', no_asistida: 'No asistida'
     };
     return mapa[estado] || estado;
 };
-
 const medicamentosPorConsulta = {};
 const tiposExamenPorConsulta = {};
 const contextoCita = {};
@@ -336,7 +337,7 @@ async function marcarNoAsistio(id_cita) {
 async function mostrarAccionesPostAtencion(id_cita, id_consulta) {
     document.getElementById(`atender-${id_cita}`).remove();
 
-        const badge = document.getElementById(`badge-${id_cita}`);
+    const badge = document.getElementById(`badge-${id_cita}`);
     if (badge) {
         badge.textContent = 'Atendida';
         badge.className = 'estado-badge estado-atendida';
@@ -712,7 +713,7 @@ async function mostrarDetalleDia(texto) {
             citas.map(c => `
                 <div class="fila-cita">
                   <div>${recortarHora(c.hora)} · ${c.paciente_nombres} ${c.paciente_apellidos}</div>
-                  <span class="estado-badge">${formatearEstado(c.estado)}</span>
+                <span class="estado-badge estado-${c.estado}">${formatearEstado(c.estado)}</span>
                 </div>`).join('')
             : `<p>${esPasado ? 'No hubo citas ese día.' : 'No hay citas agendadas ese día.'}</p>`;
 
