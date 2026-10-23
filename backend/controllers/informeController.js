@@ -794,13 +794,18 @@ async function informePacientes(f) {
 }
 
 // ============================================================
-const INFORMES = {
-  pacientes: informePacientes,
-  consultas: informeConsultas,
-  diagnosticos: informeDiagnosticos,
-  especialidades: informeEspecialidades
-};
-
+   const INFORMES = {
+     resumen: informeResumen,
+     citas: informeCitas,
+     financiero: informeFinanciero,
+     doctores: informeDoctores,
+     morbilidad: informeMorbilidad,
+     pacientes: informePacientes,
+     consultas: informeConsultas,
+     diagnosticos: informeDiagnosticos,
+     especialidades: informeEspecialidades
+   };
+   
 const obtenerInforme = async (req, res) => {
   const generador = INFORMES[req.params.tipo];
   if (!generador) return res.status(404).json({ mensaje: 'Ese informe no existe.' });
