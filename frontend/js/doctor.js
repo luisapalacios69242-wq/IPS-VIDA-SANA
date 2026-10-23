@@ -36,6 +36,9 @@ const tiposExamenPorConsulta = {};
 const contextoCita = {};
 
 // ---------- Plantillas de consulta según la(s) especialidad(es) del doctor ----------
+// Plantillas cuyos profesionales no formulan medicamentos ni expiden incapacidades.
+const PLANTILLAS_SIN_RECETA = ['fisioterapia'];
+
 const NOMBRES_PLANTILLA = { general: 'Medicina general', odontologia: 'Odontología' };
 let plantillasDisponibles = ['general'];
 let definicionesPlantilla = {};   // pediatría, cardiología, fisioterapia: vienen del servidor
@@ -537,7 +540,7 @@ async function atenderConsulta(id_cita) {
             return;
         }
 
-        mostrarAccionesPostAtencion(id_cita, resultado.id_consulta);
+        mostrarAccionesPostAtencion(id_cita, resultado.id_consulta, plantilla);
 
     } catch (error) {
         alert('No se pudo registrar la atención.');
@@ -579,7 +582,9 @@ async function marcarNoAsistio(id_cita) {
     }
 }
 
-async function mostrarAccionesPostAtencion(id_cita, id_consulta) {
+async function mostrarAccionesPostAtencion(id_cita, id_consulta, plantilla) {
+    const puedeRecetar = !PLANTILLAS_SIN_RECETA.includes(plantilla);
+
     document.getElementById(`atender-${id_cita}`).remove();
 
     const badge = document.getElementById(`badge-${id_cita}`);
@@ -607,6 +612,7 @@ async function mostrarAccionesPostAtencion(id_cita, id_consulta) {
       <button style="background:#fff; color:#185fa5; border:1px solid #185fa5;">Descargar resumen de esta atención (PDF)</button>
     </a>
 
+    ${puedeRecetar ? `
     <details open style="margin-top:8px;">
       <summary>Generar fórmula médica</summary>
       <div id="filasMedicamentos-${id_consulta}">
@@ -624,7 +630,7 @@ async function mostrarAccionesPostAtencion(id_cita, id_consulta) {
       <button type="button" onclick="agregarFilaMedicamento(${id_consulta})" style="background:#fff; color:#185fa5; border:1px solid #185fa5;">+ Agregar otro medicamento</button>
       <button onclick="generarFormula(${id_consulta})">Generar fórmula (con todos los medicamentos)</button>
       <p id="mensajeFormula-${id_consulta}" class="error"></p>
-    </details>
+    </details>` : ''}
 
     <details style="margin-top:8px;">
       <summary>Generar orden de examen</summary>
@@ -641,6 +647,7 @@ async function mostrarAccionesPostAtencion(id_cita, id_consulta) {
       <p id="mensajeOrden-${id_consulta}" class="error"></p>
     </details>
 
+    ${puedeRecetar ? `
     <details style="margin-top:8px;">
       <summary>Generar incapacidad médica</summary>
       <label>Fecha de inicio</label>
@@ -651,7 +658,7 @@ async function mostrarAccionesPostAtencion(id_cita, id_consulta) {
       <textarea id="incMotivo-${id_consulta}" rows="2" placeholder="Diagnóstico o motivo de la incapacidad"></textarea>
       <button onclick="generarIncapacidad(${id_consulta})">Generar incapacidad</button>
       <p id="mensajeIncapacidad-${id_consulta}" class="error"></p>
-    </details>
+    </details>` : ''}
   `;
 }
 
