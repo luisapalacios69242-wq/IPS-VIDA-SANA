@@ -3,7 +3,7 @@ const router = express.Router();
 const {
   agendaDelDoctor, atenderConsulta, especialidadesDelDoctor, iniciarAtencion, marcarNoAsistio, buscarDiagnosticos,
   listarMedicamentos, listarTiposExamen, generarFormula, generarOrdenExamen, generarIncapacidad,
-  listarPlantillas
+  listarPlantillas, serviciosDelDoctor
 } = require('../controllers/doctorController');
 
 router.get('/:id_doctor/agenda', agendaDelDoctor);
