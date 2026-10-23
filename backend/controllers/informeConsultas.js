@@ -149,25 +149,58 @@ function mesesDelRango(f) {
 async function informeConsultas(f, { completo = false } = {}) {
   const filas = await cargarFilas(f);
 
-  const porDoctor = [...agrupar(filas, (r) => r.doctor_id).values()].map((g) => ({
-    id_doctor: g[0].doctor_id,
-    nombre: g[0].doctor,
-    especialidades: [...new Set(g.map((r) => r.especialidad))].join(', '),
-    consultas: g.length,
-    pacientes: unicos(g, 'paciente_id'),
-    recaudado: sumaPagada(g),
-    sinFacturar: g.filter((r) => !r.estado_factura).length,
-    diagnosticoFrecuente: (topDiagnosticos(g, 1)[0] || null)
-  })).sort((a, b) => b.consultas - a.consultas);
+  // Se listan TODOS los doctores y especialidades (según los filtros), aunque no hayan atendido consultas.
+  const wd = [];
+  const pd = [];
+  if (f.doctor) { wd.push('d.id_doctor = ?'); pd.push(f.doctor); }
+  if (f.especialidad) {
+    wd.push('EXISTS (SELECT 1 FROM doctor_especialidad fe WHERE fe.doctor_id = d.id_doctor AND fe.especialidad_id = ?)');
+    pd.push(f.especialidad);
+  }
+  const [doctores] = await pool.query(
+    `SELECT d.id_doctor, CONCAT(u.nombres, ' ', u.apellidos) AS nombre,
+            (SELECT GROUP_CONCAT(e.nombre ORDER BY e.nombre SEPARATOR ', ')
+               FROM doctor_especialidad de JOIN especialidad e ON e.id_especialidad = de.especialidad_id
+              WHERE de.doctor_id = d.id_doctor) AS especialidades
+     FROM doctor d JOIN usuario u ON u.id_usuario = d.usuario_id
+     ${wd.length ? 'WHERE ' + wd.join(' AND ') : ''}
+     ORDER BY nombre`,
+    pd
+  );
+  const gruposDoctor = agrupar(filas, (r) => r.doctor_id);
 
-  const porEspecialidad = [...agrupar(filas, (r) => r.especialidad).values()].map((g) => ({
-    nombre: g[0].especialidad,
-    consultas: g.length,
-    pacientes: unicos(g, 'paciente_id'),
-    doctores: unicos(g, 'doctor_id'),
-    recaudado: sumaPagada(g),
-    diagnosticoFrecuente: (topDiagnosticos(g, 1)[0] || null)
-  })).sort((a, b) => b.consultas - a.consultas);
+  const porDoctor = doctores.map((d) => {
+    const g = gruposDoctor.get(d.id_doctor) || [];
+    return {
+      id_doctor: d.id_doctor,
+      nombre: d.nombre,
+      especialidades: d.especialidades || 'Sin especialidad',
+      consultas: g.length,
+      pacientes: unicos(g, 'paciente_id'),
+      recaudado: sumaPagada(g),
+      sinFacturar: g.filter((r) => !r.estado_factura).length,
+      diagnosticoFrecuente: (topDiagnosticos(g, 1)[0] || null)
+    };
+  }).sort((a, b) => b.consultas - a.consultas || a.nombre.localeCompare(b.nombre));
+
+  const [especialidadesBD] = await pool.query(
+    `SELECT nombre FROM especialidad ${f.especialidad ? 'WHERE id_especialidad = ?' : ''} ORDER BY nombre`,
+    f.especialidad ? [f.especialidad] : []
+  );
+  const gruposEsp = agrupar(filas, (r) => r.especialidad);
+  const nombresEsp = new Set([...especialidadesBD.map((e) => e.nombre), ...gruposEsp.keys()]);
+
+  const porEspecialidad = [...nombresEsp].map((nombre) => {
+    const g = gruposEsp.get(nombre) || [];
+    return {
+      nombre,
+      consultas: g.length,
+      pacientes: unicos(g, 'paciente_id'),
+      doctores: unicos(g, 'doctor_id'),
+      recaudado: sumaPagada(g),
+      diagnosticoFrecuente: (topDiagnosticos(g, 1)[0] || null)
+    };
+  }).sort((a, b) => b.consultas - a.consultas || a.nombre.localeCompare(b.nombre));
 
   return {
     totales: {
