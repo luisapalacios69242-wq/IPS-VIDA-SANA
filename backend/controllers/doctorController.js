@@ -1,4 +1,5 @@
 const pool = require('../config/conexion');
+const { PLANTILLAS, limpiarDatosExtra } = require('../config/plantillas');
 
 const agendaDelDoctor = async (req, res) => {
   const { id_doctor } = req.params;
@@ -73,7 +74,7 @@ const atenderConsulta = async (req, res) => {
     return res.status(400).json({ mensaje: 'Debes seleccionar el diagnóstico (CIE-10).' });
   }
 
-    const plantillaFinal = ['general', 'odontologia'].includes(plantilla) ? plantilla : 'general';
+  const plantillaFinal = ['general', 'odontologia', ...Object.keys(PLANTILLAS)].includes(plantilla) ? plantilla : 'general';
   let extraJson = null;
 
   if (plantillaFinal === 'odontologia') {
@@ -92,6 +93,14 @@ const atenderConsulta = async (req, res) => {
     }
 
     extraJson = JSON.stringify(limpio);
+  } else if (PLANTILLAS[plantillaFinal]) {
+    const resultado = limpiarDatosExtra(plantillaFinal, datos_extra);
+
+    if (resultado.error) {
+      return res.status(400).json({ mensaje: resultado.error });
+    }
+
+    extraJson = JSON.stringify(resultado.datos);
   }
 
   const conexion = await pool.getConnection();
@@ -145,8 +154,8 @@ const atenderConsulta = async (req, res) => {
          frecuencia_cardiaca, frecuencia_respiratoria, examen_fisico)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [id_cita, historiaRows[0].id_historia, diagnostico, diagnostico_codigo, plantillaFinal, extraJson, observaciones || null,
-       peso || null, talla || null, presion_arterial || null, temperatura || null,
-       frecuencia_cardiaca || null, frecuencia_respiratoria || null, examen_fisico || null]
+        peso || null, talla || null, presion_arterial || null, temperatura || null,
+        frecuencia_cardiaca || null, frecuencia_respiratoria || null, examen_fisico || null]
     );
 
     await conexion.query(
@@ -169,6 +178,8 @@ const atenderConsulta = async (req, res) => {
     return res.status(500).json({ mensaje: 'Error del servidor al registrar la consulta.' });
   }
 };
+
+const listarPlantillas = (req, res) => res.json(PLANTILLAS);
 
 const iniciarAtencion = async (req, res) => {
   const { id_cita } = req.params;
@@ -401,5 +412,6 @@ const generarIncapacidad = async (req, res) => {
 
 module.exports = {
   agendaDelDoctor, atenderConsulta, iniciarAtencion, especialidadesDelDoctor, buscarDiagnosticos, marcarNoAsistio,
-  listarMedicamentos, listarTiposExamen, generarFormula, generarOrdenExamen, generarIncapacidad
+  listarMedicamentos, listarTiposExamen, generarFormula, generarOrdenExamen, generarIncapacidad,
+  listarPlantillas
 };

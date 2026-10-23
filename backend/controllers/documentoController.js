@@ -1,6 +1,7 @@
 const PDFDocument = require('pdfkit');
 const path = require('path');
 const pool = require('../config/conexion');
+const { PLANTILLAS } = require('../config/plantillas');
 
 const IPS = {
   nombre: 'Consultorio Vida Sana',
@@ -375,6 +376,7 @@ const generarPdfFormula = async (req, res) => {
     }
   }
 };
+
 const generarPdfResumenAtencion = async (req, res) => {
   const { id_consulta } = req.params;
 
@@ -458,7 +460,9 @@ const generarPdfResumenAtencion = async (req, res) => {
       if (peso && talla) {
         const tallaMetros = talla / 100;
         const imc = peso / (tallaMetros * tallaMetros);
-        lineaImc = `${imc.toFixed(1)} (${categoriaIMC(imc)})`;
+        lineaImc = co.plantilla === 'pediatria'
+          ? `${imc.toFixed(1)} kg/m² (interpretar con las curvas OMS según edad y sexo)`
+          : `${imc.toFixed(1)} (${categoriaIMC(imc)})`;
       }
 
       dibujarTabla(doc, {
@@ -482,6 +486,28 @@ const generarPdfResumenAtencion = async (req, res) => {
           filas: [[co.examen_fisico]]
         });
       }
+    }
+
+    // Plantillas por especialidad (pediatría, cardiología, fisioterapia):
+    // solo se imprimen los campos que el doctor llenó.
+    const definicion = PLANTILLAS[co.plantilla];
+
+    if (definicion) {
+      const extra = typeof co.datos_extra === 'string' ? JSON.parse(co.datos_extra) : (co.datos_extra || {});
+
+      definicion.secciones.forEach((seccion) => {
+        const filas = seccion.campos
+          .filter(c => extra[c.clave])
+          .map(c => [c.etiqueta.replace(' *', ''), extra[c.clave]]);
+
+        if (filas.length) {
+          dibujarTabla(doc, {
+            titulo: `${definicion.nombre}: ${seccion.titulo}`,
+            columnas: [{ titulo: 'Campo', ancho: 200 }, { titulo: 'Detalle' }],
+            filas
+          });
+        }
+      });
     }
 
     dibujarTabla(doc, {

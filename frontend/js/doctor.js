@@ -35,9 +35,32 @@ const medicamentosPorConsulta = {};
 const tiposExamenPorConsulta = {};
 const contextoCita = {};
 
-// ---------- Plantilla de consulta según la especialidad del doctor ----------
-let plantillaBase = 'general';
-let plantillaMixta = false;
+// ---------- Plantillas de consulta según la(s) especialidad(es) del doctor ----------
+const NOMBRES_PLANTILLA = { general: 'Medicina general', odontologia: 'Odontología' };
+let plantillasDisponibles = ['general'];
+let definicionesPlantilla = {};   // pediatría, cardiología, fisioterapia: vienen del servidor
+
+function plantillaDeEspecialidad(nombre) {
+    const n = String(nombre || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (n.includes('odontolog')) return 'odontologia';
+    if (n.includes('pediatr')) return 'pediatria';
+    if (n.includes('cardiolog')) return 'cardiologia';
+    if (n.includes('fisioterap')) return 'fisioterapia';
+    return 'general';
+}
+
+async function cargarPlantillas() {
+    try {
+        const respuesta = await fetch(`${API}/api/doctor/plantillas`);
+        const datos = await respuesta.json();
+        if (!respuesta.ok) return;
+
+        definicionesPlantilla = datos;
+        Object.keys(datos).forEach(clave => { NOMBRES_PLANTILLA[clave] = datos[clave].nombre; });
+    } catch (error) {
+        console.error(error);
+    }
+}
 
 async function cargarEspecialidadesDoctor() {
     try {
@@ -45,21 +68,57 @@ async function cargarEspecialidadesDoctor() {
         const especialidades = await respuesta.json();
         if (!respuesta.ok) return;
 
-        const nombres = especialidades.map(e =>
-            e.nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
-        const tieneOdonto = nombres.some(n => n.includes('odontolog'));
+        const lista = [...new Set(especialidades.map(e => plantillaDeEspecialidad(e.nombre)))]
+            .filter(p => p === 'general' || p === 'odontologia' || definicionesPlantilla[p]);
 
-        plantillaMixta = tieneOdonto && nombres.some(n => !n.includes('odontolog'));
-        plantillaBase = tieneOdonto && !plantillaMixta ? 'odontologia' : 'general';
+        plantillasDisponibles = lista.length ? lista : ['general'];
     } catch (error) {
         console.error(error);
     }
+}
+
+function campoPlantillaHtml(c, id_cita) {
+    const id = `ext-${c.clave}-${id_cita}`;
+    let control;
+
+    if (c.tipo === 'area') {
+        control = `<textarea id="${id}" rows="3" placeholder="${esc(c.placeholder || '')}"></textarea>`;
+    } else if (c.tipo === 'lista') {
+        control = `<select id="${id}">${opcionesSelect(c.opciones, '', 'Sin dato')}</select>`;
+    } else if (c.tipo === 'numero') {
+        control = `<input type="number" step="any" id="${id}" placeholder="${esc(c.placeholder || '')}"
+                          ${c.min !== undefined ? `min="${c.min}"` : ''} ${c.max !== undefined ? `max="${c.max}"` : ''}>`;
+    } else {
+        control = `<input type="text" id="${id}" placeholder="${esc(c.placeholder || '')}">`;
+    }
+
+    return `<div class="campo ${c.tipo === 'area' ? 'campo-full' : ''}"><label>${c.etiqueta}</label>${control}</div>`;
+}
+
+function bloquesEspecialidadHtml(id_cita) {
+    return plantillasDisponibles
+        .filter(p => definicionesPlantilla[p])
+        .map(p => `
+            <div id="bloque-${p}-${id_cita}" class="${plantillasDisponibles[0] === p ? '' : 'oculto'}">
+              ${definicionesPlantilla[p].secciones.map(seccion => `
+                <details open>
+                  <summary>${definicionesPlantilla[p].nombre}: ${seccion.titulo}</summary>
+                  <div class="grid-2">
+                    ${seccion.campos.map(c => campoPlantillaHtml(c, id_cita)).join('')}
+                  </div>
+                </details>`).join('')}
+            </div>`).join('');
 }
 
 function cambiarPlantilla(id_cita) {
     const valor = document.getElementById(`plantilla-${id_cita}`).value;
     document.getElementById(`bloque-general-${id_cita}`).classList.toggle('oculto', valor === 'odontologia');
     document.getElementById(`bloque-odonto-${id_cita}`).classList.toggle('oculto', valor !== 'odontologia');
+
+    Object.keys(definicionesPlantilla).forEach(p => {
+        const bloque = document.getElementById(`bloque-${p}-${id_cita}`);
+        if (bloque) bloque.classList.toggle('oculto', valor !== p);
+    });
 }
 
 // ---------- Historia clínica (RH, alergias, antecedentes) ----------
@@ -164,16 +223,15 @@ async function cargarAgenda() {
               <div id="zona-historia-${c.id_cita}"></div>
             </details>
 
-            ${plantillaMixta ? `
+            ${plantillasDisponibles.length > 1 ? `
               <div class="campo campo-full">
                 <label>Tipo de consulta</label>
                 <select id="plantilla-${c.id_cita}" onchange="cambiarPlantilla(${c.id_cita})">
-                  <option value="general">Medicina general</option>
-                  <option value="odontologia">Odontología</option>
+                  ${plantillasDisponibles.map(p => `<option value="${p}">${NOMBRES_PLANTILLA[p]}</option>`).join('')}
                 </select>
               </div>` : ''}
 
-            <div id="bloque-general-${c.id_cita}" class="${plantillaBase === 'odontologia' ? 'oculto' : ''}">
+            <div id="bloque-general-${c.id_cita}" class="${plantillasDisponibles[0] === 'odontologia' ? 'oculto' : ''}">
               <details open>
                 <summary>Signos vitales y examen físico</summary>
                 <div class="grid-2">
@@ -209,7 +267,7 @@ async function cargarAgenda() {
               </details>
             </div>
 
-            <div id="bloque-odonto-${c.id_cita}" class="${plantillaBase === 'odontologia' ? '' : 'oculto'}">
+            <div id="bloque-odonto-${c.id_cita}" class="${plantillasDisponibles[0] === 'odontologia' ? '' : 'oculto'}">
               <details open>
                 <summary>Consulta odontológica</summary>
                 <div class="grid-2">
@@ -245,6 +303,8 @@ async function cargarAgenda() {
                 </div>
               </details>
             </div>
+
+            ${bloquesEspecialidadHtml(c.id_cita)}
 
             <details open>
               <summary>Diagnóstico</summary>
@@ -394,7 +454,7 @@ async function atenderConsulta(id_cita) {
     }
 
     const selector = document.getElementById(`plantilla-${id_cita}`);
-    const plantilla = selector ? selector.value : plantillaBase;
+    const plantilla = selector ? selector.value : plantillasDisponibles[0];
     const esOdonto = plantilla === 'odontologia';
     const general = (id) => esOdonto ? null : (valor(id) || null);
 
@@ -413,6 +473,19 @@ async function atenderConsulta(id_cita) {
         if (!datos_extra.motivo_consulta) {
             alert('Indica el motivo de consulta.');
             return;
+        }
+    } else if (definicionesPlantilla[plantilla]) {
+        datos_extra = {};
+
+        for (const seccion of definicionesPlantilla[plantilla].secciones) {
+            for (const c of seccion.campos) {
+                datos_extra[c.clave] = valor(`ext-${c.clave}-${id_cita}`);
+
+                if (c.obligatorio && !datos_extra[c.clave]) {
+                    alert(`Completa el campo: ${c.etiqueta.replace(' *', '')}.`);
+                    return;
+                }
+            }
         }
     }
 
@@ -958,7 +1031,7 @@ const inputFecha = document.getElementById('inputFechaAgenda');
 inputFecha.value = fechaATexto(new Date());
 inputFecha.addEventListener('change', cargarAgenda);
 
-cargarEspecialidadesDoctor().then(cargarAgenda);
+cargarPlantillas().then(cargarEspecialidadesDoctor).then(cargarAgenda);
 
 Notificaciones.montar({
     contenedor: document.getElementById('zonaCampana'),
