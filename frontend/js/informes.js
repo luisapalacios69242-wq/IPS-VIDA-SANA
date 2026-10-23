@@ -548,6 +548,16 @@
     doctores: renderDoctores, morbilidad: renderMorbilidad, pacientes: renderPacientes
   };
 
+  window.InformesAdmin = {
+    registrar(clave, titulo, renderizador) { TITULOS[clave] = titulo; RENDERIZADORES[clave] = renderizador; },
+    informeActivo: () => informeActivo,
+    filtros: leerFiltros,
+    h: {
+      esc, numero, moneda, porc, fechaBonita, etiquetaPeriodo, vacio, tarjetaKpi, gridKpis, bloque, ranking, tabla, lienzo,
+      graficaLinea, graficaBarras, graficaDona, PALETA, NOMBRE_ESTADO
+    }
+  };
+
   // ============================================================
   // Carga y control
   // ============================================================

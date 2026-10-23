@@ -1,4 +1,5 @@
 const pool = require('../config/conexion');
+const { informeConsultas, informeDiagnosticos, informeEspecialidades } = require('./informeConsultas');
 
 const FECHA_VALIDA = /^\d{4}-\d{2}-\d{2}$/;
 const DURACION_CITA_MIN = 30;
@@ -296,12 +297,12 @@ async function informeCitas(f) {
 
   const mapa = horas.length
     ? {
-        horas,
-        dias: diasOrdenados.map((d) => d.dia),
-        valores: [1, 2, 3, 4, 5, 6, 0].map((idx) =>
-          horas.map((h) => n((matriz.find((m) => m.dia_sem === idx + 1 && m.hora_dia === h) || {}).total))
-        )
-      }
+      horas,
+      dias: diasOrdenados.map((d) => d.dia),
+      valores: [1, 2, 3, 4, 5, 6, 0].map((idx) =>
+        horas.map((h) => n((matriz.find((m) => m.dia_sem === idx + 1 && m.hora_dia === h) || {}).total))
+      )
+    }
     : null;
 
   const ocupacion = await ocupacionPorDoctor(f);
@@ -794,12 +795,10 @@ async function informePacientes(f) {
 
 // ============================================================
 const INFORMES = {
-  resumen: informeResumen,
-  citas: informeCitas,
-  financiero: informeFinanciero,
-  doctores: informeDoctores,
-  morbilidad: informeMorbilidad,
-  pacientes: informePacientes
+  pacientes: informePacientes,
+  consultas: informeConsultas,
+  diagnosticos: informeDiagnosticos,
+  especialidades: informeEspecialidades
 };
 
 const obtenerInforme = async (req, res) => {
@@ -818,4 +817,4 @@ const obtenerInforme = async (req, res) => {
   }
 };
 
-module.exports = { obtenerInforme };
+module.exports = { obtenerInforme, INFORMES, leerFiltros };

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/panel.css">
     <link rel="stylesheet" href="css/tema.css">
     <link rel="stylesheet" href="css/informes.css">
+    <link rel="stylesheet" href="css/informes-extra.css">
     <script src="js/tema.js"></script>
 </head>
 
@@ -244,18 +245,24 @@
                         <div class="inf-acciones">
                             <button type="button" id="btnGenerarInforme">Aplicar</button>
                             <button type="button" id="btnImprimirInforme" class="inf-btn-sec">Imprimir</button>
+                            <button type="button" id="btnExcelInforme" class="inf-btn-excel">Exportar a Excel</button>
                         </div>
                     </div>
                     <p id="mensajeInforme" class="error"></p>
                 </div>
 
                 <div class="inf-tabs">
-                    <button type="button" class="inf-tab activo" data-informe="resumen">Resumen ejecutivo</button>
-                    <button type="button" class="inf-tab" data-informe="citas">Citas y asistencia</button>
-                    <button type="button" class="inf-tab" data-informe="financiero">Financiero</button>
-                    <button type="button" class="inf-tab" data-informe="doctores">Doctores</button>
-                    <button type="button" class="inf-tab" data-informe="morbilidad">Morbilidad CIE-10</button>
-                    <button type="button" class="inf-tab" data-informe="pacientes">Pacientes</button>
+                    <div class="inf-tabs">
+                        <button type="button" class="inf-tab activo" data-informe="resumen">Resumen ejecutivo</button>
+                        <button type="button" class="inf-tab" data-informe="citas">Citas y asistencia</button>
+                        <button type="button" class="inf-tab" data-informe="financiero">Financiero</button>
+                        <button type="button" class="inf-tab" data-informe="doctores">Doctores</button>
+                        <button type="button" class="inf-tab" data-informe="morbilidad">Morbilidad CIE-10</button>
+                        <button type="button" class="inf-tab" data-informe="pacientes">Pacientes</button>
+                        <button type="button" class="inf-tab" data-informe="consultas">Consultas atendidas</button>
+                        <button type="button" class="inf-tab" data-informe="diagnosticos">Diagnósticos</button>
+                        <button type="button" class="inf-tab" data-informe="especialidades">Especialidades</button>
+                    </div>
                 </div>
 
                 <div id="infImpresion" class="inf-impresion"></div>
@@ -270,6 +277,7 @@
     <script src="js/admin.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="js/informes.js"></script>
+    <script src="js/informes-extra.js"></script>
 </body>
 
 </html>
