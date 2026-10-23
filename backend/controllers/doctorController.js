@@ -1,6 +1,9 @@
 const pool = require('../config/conexion');
 const { PLANTILLAS, limpiarDatosExtra } = require('../config/plantillas');
 
+// Plantillas cuyos profesionales no formulan medicamentos ni expiden incapacidades.
+const PLANTILLAS_SIN_RECETA = ['fisioterapia'];
+
 const agendaDelDoctor = async (req, res) => {
   const { id_doctor } = req.params;
   const { fecha } = req.query;
@@ -260,13 +263,18 @@ const generarFormula = async (req, res) => {
 
   try {
     const [consultaRows] = await conexion.query(
-      'SELECT id_consulta FROM consulta WHERE id_consulta = ?',
+      'SELECT id_consulta, plantilla FROM consulta WHERE id_consulta = ?',
       [id_consulta]
     );
 
     if (consultaRows.length === 0) {
       conexion.release();
       return res.status(404).json({ mensaje: 'La consulta no existe.' });
+    }
+
+    if (PLANTILLAS_SIN_RECETA.includes(consultaRows[0].plantilla)) {
+      conexion.release();
+      return res.status(403).json({ mensaje: 'Esta especialidad no puede formular medicamentos.' });
     }
 
     await conexion.beginTransaction();
@@ -374,12 +382,16 @@ const generarIncapacidad = async (req, res) => {
 
   try {
     const [consultaRows] = await pool.query(
-      'SELECT id_consulta FROM consulta WHERE id_consulta = ?',
+      'SELECT id_consulta, plantilla FROM consulta WHERE id_consulta = ?',
       [id_consulta]
     );
 
     if (consultaRows.length === 0) {
       return res.status(404).json({ mensaje: 'La consulta no existe.' });
+    }
+
+    if (PLANTILLAS_SIN_RECETA.includes(consultaRows[0].plantilla)) {
+      return res.status(403).json({ mensaje: 'Esta especialidad no puede expedir incapacidades médicas.' });
     }
 
     const inicio = new Date(`${fecha_inicio}T00:00:00`);
