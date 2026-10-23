@@ -224,15 +224,6 @@ function dibujarListaCat() {
   const inicio = (cat.pagina - 1) * POR_PAGINA_CAT;
   const visibles = filtradas.slice(inicio, inicio + POR_PAGINA_CAT);
 
-  const sinEspecialidad = cat.servicios.filter(s => !s.especialidad_id).length;
-
-  const itemGeneral = `
-    <button type="button" class="cat-item cat-item-general ${cat.seleccion === 'general' ? 'activo' : ''}" data-accion="seleccionar" data-id="general">
-      <span class="cat-item-nombre">Servicios generales</span>
-      <span class="cat-item-meta">${sinEspecialidad} servicio(s) sin especialidad</span>
-    </button>
-  `;
-
   const items = visibles.map(e => {
     const id = String(e.id_especialidad);
     const nServicios = cat.servicios.filter(s => String(s.especialidad_id) === id).length;
@@ -264,7 +255,6 @@ function dibujarListaCat() {
   }
 
   zona.innerHTML = `
-    ${itemGeneral}
     <p class="reg-contador">${total} especialidad(es)</p>
     ${items || '<p class="reg-vacio">Sin resultados.</p>'}
     ${paginacion}
@@ -297,7 +287,6 @@ function filaServicioHtml(s) {
           <div class="gest-campo gest-full">
             <label>Especialidad</label>
             <select id="catServEsp">
-              <option value="">Sin especialidad (servicio general)</option>
               ${opciones}
             </select>
           </div>
@@ -357,30 +346,18 @@ function dibujarDetalleCat() {
     return;
   }
 
-  const esGeneral = cat.seleccion === 'general';
-  const esp = esGeneral ? null : cat.especialidades.find(e => String(e.id_especialidad) === cat.seleccion);
+  const esp = cat.especialidades.find(e => String(e.id_especialidad) === cat.seleccion);
 
-  if (!esGeneral && !esp) {
+  if (!esp) {
     zona.innerHTML = '<div class="cat-tarjeta"><p class="reg-vacio">Selecciona una especialidad de la lista.</p></div>';
     return;
   }
 
-  const servicios = cat.servicios.filter(s =>
-    esGeneral ? !s.especialidad_id : String(s.especialidad_id) === cat.seleccion
-  );
+  const servicios = cat.servicios.filter(s => String(s.especialidad_id) === cat.seleccion);
 
   // ----- Cabecera -----
   let cabeceraHtml;
-  if (esGeneral) {
-    cabeceraHtml = `
-      <div class="cat-cabecera">
-        <div>
-          <h3 class="cat-titulo">Servicios generales</h3>
-          <p class="cat-desc">Servicios que no pertenecen a una especialidad en particular, como procedimientos.</p>
-        </div>
-      </div>
-    `;
-  } else if (cat.editandoEsp) {
+  if (cat.editandoEsp) {
     cabeceraHtml = `
       <h3 class="cat-titulo">Editar especialidad</h3>
       <div class="gest-grid" style="margin-top:14px;">
@@ -450,21 +427,18 @@ function dibujarDetalleCat() {
       : (cat.agregandoServicio ? '' : '<p class="reg-vacio" style="text-align:left; padding:6px 0;">Aún no hay servicios aquí.</p>')}
   `;
 
-  // ----- Doctores (solo en especialidades) -----
-  let doctoresHtml = '';
-  if (!esGeneral) {
-    const doctores = cat.doctores.filter(d => (d.especialidad_ids || '').split(',').includes(cat.seleccion));
-    doctoresHtml = `
-      <div class="cat-seccion-cab">
-        <h4 class="gest-titulo">Doctores (${doctores.length})</h4>
-      </div>
-      ${doctores.length
-        ? `<div class="cat-docs">${doctores.map(d => `
-            <span class="cat-doc">Dr(a). ${escUsr(d.nombres)} ${escUsr(d.apellidos)}<small>${escUsr(d.tarjeta_profesional)}</small></span>
-          `).join('')}</div>`
-        : '<p class="reg-vacio" style="text-align:left; padding:6px 0;">Ningún doctor tiene esta especialidad todavía. Asígnala desde Gestionar Usuarios.</p>'}
-    `;
-  }
+  // ----- Doctores -----
+  const doctores = cat.doctores.filter(d => (d.especialidad_ids || '').split(',').includes(cat.seleccion));
+  const doctoresHtml = `
+    <div class="cat-seccion-cab">
+      <h4 class="gest-titulo">Doctores (${doctores.length})</h4>
+    </div>
+    ${doctores.length
+      ? `<div class="cat-docs">${doctores.map(d => `
+          <span class="cat-doc">Dr(a). ${escUsr(d.nombres)} ${escUsr(d.apellidos)}<small>${escUsr(d.tarjeta_profesional)}</small></span>
+        `).join('')}</div>`
+      : '<p class="reg-vacio" style="text-align:left; padding:6px 0;">Ningún doctor tiene esta especialidad todavía. Asígnala desde Gestionar Usuarios.</p>'}
+  `;
 
   zona.innerHTML = `
     ${aviso}
@@ -498,7 +472,7 @@ async function manejarClickCatalogo(evento) {
     return;
   }
   if (accion === 'cancelar-nueva') {
-    seleccionarCat(cat.especialidades.length ? String(cat.especialidades[0].id_especialidad) : 'general');
+    seleccionarCat(cat.especialidades.length ? String(cat.especialidades[0].id_especialidad) : '');
     return;
   }
 
@@ -575,13 +549,14 @@ async function manejarClickCatalogo(evento) {
   if (accion === 'guardar-nuevo-serv') {
     const nombre = valorCampo('catServNombre');
     const precio = valorCampo('catServPrecio');
+    if (!esp) { avisarCat('Selecciona primero una especialidad para el servicio.'); return; }
     if (!nombre || precio === '') { avisarCat('El nombre y el precio son obligatorios.'); return; }
     if (Number(precio) < 0) { avisarCat('El precio no puede ser negativo.'); return; }
 
     const r = await catEnviar('/api/admin/servicios', 'POST', {
       nombre, precio,
       descripcion: valorCampo('catServDesc'),
-      especialidad_id: cat.seleccion === 'general' ? null : Number(cat.seleccion)
+      especialidad_id: Number(cat.seleccion)
     });
     if (!r.ok) { avisarCat(r.datos.mensaje || 'No se pudo crear el servicio.'); return; }
 
@@ -600,10 +575,12 @@ async function manejarClickCatalogo(evento) {
     if (Number(precio) < 0) { avisarCat('El precio no puede ser negativo.'); return; }
 
     const espElegida = document.getElementById('catServEsp').value;
+    if (espElegida === '') { avisarCat('Todo servicio debe pertenecer a una especialidad.'); return; }
+
     const r = await catEnviar(`/api/admin/servicios/${id}`, 'PUT', {
       nombre, precio,
       descripcion: valorCampo('catServDesc'),
-      especialidad_id: espElegida === '' ? null : Number(espElegida)
+      especialidad_id: Number(espElegida)
     });
     if (!r.ok) { avisarCat(r.datos.mensaje || 'No se pudo guardar el servicio.'); return; }
 
@@ -637,11 +614,11 @@ async function recargarCatalogo() {
   cat.servicios = Array.isArray(servicios) ? servicios : [];
   cat.doctores = (Array.isArray(usuarios) ? usuarios : []).filter(u => u.rol === 'doctor');
 
-  const seleccionValida = cat.seleccion === 'general' || cat.seleccion === 'nueva' ||
+  const seleccionValida = cat.seleccion === 'nueva' ||
     cat.especialidades.some(e => String(e.id_especialidad) === cat.seleccion);
 
   if (!seleccionValida) {
-    cat.seleccion = cat.especialidades.length ? String(cat.especialidades[0].id_especialidad) : 'general';
+    cat.seleccion = cat.especialidades.length ? String(cat.especialidades[0].id_especialidad) : '';
   }
 
   dibujarListaCat();
