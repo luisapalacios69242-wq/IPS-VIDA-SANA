@@ -1,5 +1,20 @@
 const pool = require('../config/conexion');
 
+const FORMAS_PAGO = ['efectivo', 'tarjeta', 'transferencia'];
+
+// Servicio que se cobra por una consulta: el que marcó el doctor al atender.
+// Si la consulta es antigua (sin servicio guardado), se usa la consulta principal
+// de la especialidad del doctor.
+const SERVICIO_RESUELTO = `
+  COALESCE(co.servicio_id, (
+    SELECT s2.id_servicio
+    FROM servicio s2
+    JOIN doctor_especialidad de ON de.especialidad_id = s2.especialidad_id
+    WHERE de.doctor_id = c.doctor_id AND s2.estado = 'activo'
+    ORDER BY (s2.nombre NOT LIKE 'Consulta%'), s2.id_servicio
+    LIMIT 1
+  ))`;
+
 const listarServiciosActivos = async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -13,6 +28,7 @@ const listarServiciosActivos = async (req, res) => {
 };
 
 // Consultas atendidas ese día que todavía no tienen factura generada.
+// Incluye el servicio y el valor que se va a cobrar, ya definidos.
 const listarConsultasParaFacturar = async (req, res) => {
   const { fecha } = req.query;
   if (!fecha) return res.status(400).json({ mensaje: 'Debes indicar la fecha (YYYY-MM-DD).' });
@@ -21,13 +37,15 @@ const listarConsultasParaFacturar = async (req, res) => {
     const [rows] = await pool.query(
       `SELECT co.id_consulta, c.hora,
               up.nombres AS paciente_nombres, up.apellidos AS paciente_apellidos,
-              ud.nombres AS doctor_nombres, ud.apellidos AS doctor_apellidos
+              ud.nombres AS doctor_nombres, ud.apellidos AS doctor_apellidos,
+              s.id_servicio AS servicio_id, s.nombre AS servicio_nombre, s.precio AS servicio_precio
        FROM consulta co
        JOIN cita c ON c.id_cita = co.cita_id
        JOIN paciente p ON p.id_paciente = c.paciente_id
        JOIN usuario up ON up.id_usuario = p.usuario_id
        JOIN doctor d ON d.id_doctor = c.doctor_id
        JOIN usuario ud ON ud.id_usuario = d.usuario_id
+       LEFT JOIN servicio s ON s.id_servicio = ${SERVICIO_RESUELTO}
        LEFT JOIN factura f ON f.consulta_id = co.id_consulta
        WHERE c.fecha = ? AND c.estado = 'atendida' AND f.id_factura IS NULL
        ORDER BY c.hora`,
@@ -66,26 +84,42 @@ const listarFacturasDelDia = async (req, res) => {
   }
 };
 
+// La secretaria solo indica la forma de pago. El servicio y el valor los define el servidor.
 const crearFactura = async (req, res) => {
-  const { consulta_id, secretaria_id, servicio_id, valor, forma_pago, estado } = req.body;
+  const { consulta_id, secretaria_id, forma_pago } = req.body;
 
-  if (!consulta_id || !secretaria_id || !servicio_id || valor === undefined || valor === null || valor === '') {
+  if (!consulta_id || !secretaria_id) {
     return res.status(400).json({ mensaje: 'Faltan campos obligatorios.' });
   }
 
-  if (Number(valor) < 0) {
-    return res.status(400).json({ mensaje: 'El valor no puede ser negativo.' });
-  }
-
-  const estadoFinal = estado === 'pagada' ? 'pagada' : 'pendiente';
-
-  if (estadoFinal === 'pagada' && !forma_pago) {
-    return res.status(400).json({ mensaje: 'Si la factura queda pagada, debes indicar la forma de pago.' });
+  if (!FORMAS_PAGO.includes(forma_pago)) {
+    return res.status(400).json({ mensaje: 'Debes elegir la forma de pago (efectivo, tarjeta o transferencia).' });
   }
 
   const conexion = await pool.getConnection();
 
   try {
+    const [consultaRows] = await conexion.query(
+      `SELECT co.id_consulta, s.id_servicio, s.precio
+       FROM consulta co
+       JOIN cita c ON c.id_cita = co.cita_id
+       LEFT JOIN servicio s ON s.id_servicio = ${SERVICIO_RESUELTO}
+       WHERE co.id_consulta = ?`,
+      [consulta_id]
+    );
+
+    if (consultaRows.length === 0) {
+      return res.status(404).json({ mensaje: 'La consulta no existe.' });
+    }
+
+    if (!consultaRows[0].id_servicio) {
+      return res.status(409).json({
+        mensaje: 'No se pudo determinar el servicio de esta consulta. Revisa las especialidades y servicios del doctor.'
+      });
+    }
+
+    const { id_servicio, precio } = consultaRows[0];
+
     await conexion.beginTransaction();
 
     // Bloquea la última fila para que dos facturas no puedan sacar el mismo número al tiempo.
@@ -103,8 +137,8 @@ const crearFactura = async (req, res) => {
 
     const [resultado] = await conexion.query(
       `INSERT INTO factura (consulta_id, secretaria_id, servicio_id, numero_factura, valor, forma_pago, estado)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [consulta_id, secretaria_id, servicio_id, numeroFactura, valor, forma_pago || null, estadoFinal]
+       VALUES (?, ?, ?, ?, ?, ?, 'pagada')`,
+      [consulta_id, secretaria_id, id_servicio, numeroFactura, precio, forma_pago]
     );
 
     await conexion.commit();
@@ -128,8 +162,8 @@ const marcarFacturaPagada = async (req, res) => {
   const { id_factura } = req.params;
   const { forma_pago } = req.body;
 
-  if (!forma_pago) {
-    return res.status(400).json({ mensaje: 'Debes indicar la forma de pago.' });
+  if (!FORMAS_PAGO.includes(forma_pago)) {
+    return res.status(400).json({ mensaje: 'Debes indicar la forma de pago (efectivo, tarjeta o transferencia).' });
   }
 
   try {

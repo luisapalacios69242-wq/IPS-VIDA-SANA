@@ -65,10 +65,29 @@ const especialidadesDelDoctor = async (req, res) => {
   }
 };
 
+// Servicios activos de las especialidades del doctor (para elegir el servicio prestado).
+const serviciosDelDoctor = async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT s.id_servicio, s.nombre, s.precio, e.nombre AS especialidad
+       FROM servicio s
+       JOIN doctor_especialidad de ON de.especialidad_id = s.especialidad_id
+       JOIN especialidad e ON e.id_especialidad = s.especialidad_id
+       WHERE de.doctor_id = ? AND s.estado = 'activo'
+       ORDER BY e.nombre, (s.nombre NOT LIKE 'Consulta%'), s.nombre`,
+      [req.params.id_doctor]
+    );
+    return res.json(rows);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ mensaje: 'Error del servidor al consultar los servicios.' });
+  }
+};
+
 const atenderConsulta = async (req, res) => {
   const { id_cita } = req.params;
   const {
-    diagnostico_codigo, observaciones, plantilla, datos_extra,
+    diagnostico_codigo, observaciones, plantilla, datos_extra, servicio_id,
     peso, talla, presion_arterial, temperatura,
     frecuencia_cardiaca, frecuencia_respiratoria, examen_fisico
   } = req.body;
@@ -110,7 +129,7 @@ const atenderConsulta = async (req, res) => {
 
   try {
     const [citaRows] = await conexion.query(
-      'SELECT paciente_id, estado FROM cita WHERE id_cita = ?',
+      'SELECT paciente_id, doctor_id, estado FROM cita WHERE id_cita = ?',
       [id_cita]
     );
 
@@ -138,6 +157,27 @@ const atenderConsulta = async (req, res) => {
 
     const diagnostico = `${dxRows[0].codigo} - ${dxRows[0].descripcion}`;
 
+    // El servicio prestado debe ser un servicio activo de las especialidades del doctor.
+    let servicioFinal = null;
+
+    if (servicio_id) {
+      const [servicioRows] = await conexion.query(
+        `SELECT s.id_servicio
+         FROM servicio s
+         JOIN doctor_especialidad de ON de.especialidad_id = s.especialidad_id
+         WHERE s.id_servicio = ? AND s.estado = 'activo' AND de.doctor_id = ?
+         LIMIT 1`,
+        [servicio_id, citaRows[0].doctor_id]
+      );
+
+      if (servicioRows.length === 0) {
+        conexion.release();
+        return res.status(400).json({ mensaje: 'El servicio seleccionado no corresponde a las especialidades del doctor.' });
+      }
+
+      servicioFinal = servicioRows[0].id_servicio;
+    }
+
     const [historiaRows] = await conexion.query(
       'SELECT id_historia FROM historia_clinica WHERE paciente_id = ?',
       [citaRows[0].paciente_id]
@@ -152,11 +192,11 @@ const atenderConsulta = async (req, res) => {
 
     const [resultadoConsulta] = await conexion.query(
       `INSERT INTO consulta
-        (cita_id, historia_clinica_id, diagnostico, diagnostico_codigo, plantilla, datos_extra, observaciones,
+        (cita_id, historia_clinica_id, diagnostico, diagnostico_codigo, plantilla, datos_extra, servicio_id, observaciones,
          peso, talla, presion_arterial, temperatura,
          frecuencia_cardiaca, frecuencia_respiratoria, examen_fisico)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id_cita, historiaRows[0].id_historia, diagnostico, diagnostico_codigo, plantillaFinal, extraJson, observaciones || null,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id_cita, historiaRows[0].id_historia, diagnostico, diagnostico_codigo, plantillaFinal, extraJson, servicioFinal, observaciones || null,
         peso || null, talla || null, presion_arterial || null, temperatura || null,
         frecuencia_cardiaca || null, frecuencia_respiratoria || null, examen_fisico || null]
     );
@@ -425,5 +465,5 @@ const generarIncapacidad = async (req, res) => {
 module.exports = {
   agendaDelDoctor, atenderConsulta, iniciarAtencion, especialidadesDelDoctor, buscarDiagnosticos, marcarNoAsistio,
   listarMedicamentos, listarTiposExamen, generarFormula, generarOrdenExamen, generarIncapacidad,
-  listarPlantillas
+  listarPlantillas, serviciosDelDoctor
 };

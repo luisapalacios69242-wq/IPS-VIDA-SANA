@@ -42,6 +42,7 @@ const PLANTILLAS_SIN_RECETA = ['fisioterapia'];
 const NOMBRES_PLANTILLA = { general: 'Medicina general', odontologia: 'Odontología' };
 let plantillasDisponibles = ['general'];
 let definicionesPlantilla = {};   // pediatría, cardiología, fisioterapia: vienen del servidor
+let serviciosDoctor = [];         // servicios activos de las especialidades del doctor
 
 function plantillaDeEspecialidad(nombre) {
     const n = String(nombre || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -78,6 +79,29 @@ async function cargarEspecialidadesDoctor() {
     } catch (error) {
         console.error(error);
     }
+}
+
+async function cargarServiciosDoctor() {
+    try {
+        const respuesta = await fetch(`${API}/api/doctor/${usuario.id_doctor}/servicios`);
+        const servicios = await respuesta.json();
+        serviciosDoctor = respuesta.ok && Array.isArray(servicios) ? servicios : [];
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+const precioCOP = (v) => `$${Number(v).toLocaleString('es-CO')}`;
+
+// Opciones del servicio prestado, según el tipo de consulta elegido.
+// La primera opción (la consulta de esa especialidad) queda seleccionada por defecto.
+function opcionesServicioHtml(plantilla) {
+    const deLaPlantilla = serviciosDoctor.filter(s => plantillaDeEspecialidad(s.especialidad) === plantilla);
+    const lista = deLaPlantilla.length ? deLaPlantilla : serviciosDoctor;
+
+    return lista.map(s =>
+        `<option value="${s.id_servicio}">${esc(s.nombre)} — ${precioCOP(s.precio)}</option>`
+    ).join('');
 }
 
 function campoPlantillaHtml(c, id_cita) {
@@ -122,6 +146,10 @@ function cambiarPlantilla(id_cita) {
         const bloque = document.getElementById(`bloque-${p}-${id_cita}`);
         if (bloque) bloque.classList.toggle('oculto', valor !== p);
     });
+
+    // El servicio prestado cambia según el tipo de consulta
+    const selectServicio = document.getElementById(`servicio-${id_cita}`);
+    if (selectServicio) selectServicio.innerHTML = opcionesServicioHtml(valor);
 }
 
 // ---------- Historia clínica (RH, alergias, antecedentes) ----------
@@ -310,6 +338,14 @@ async function cargarAgenda() {
             ${bloquesEspecialidadHtml(c.id_cita)}
 
             <details open>
+              <summary>Servicio prestado</summary>
+              <label>Servicio que se le brindó al paciente (se factura con este) *</label>
+              <select id="servicio-${c.id_cita}">
+                ${opcionesServicioHtml(plantillasDisponibles[0])}
+              </select>
+            </details>
+
+            <details open>
               <summary>Diagnóstico</summary>
               <label>Diagnóstico (CIE-10) *</label>
               <div class="dx-buscador">
@@ -456,6 +492,14 @@ async function atenderConsulta(id_cita) {
         return;
     }
 
+    const selectServicio = document.getElementById(`servicio-${id_cita}`);
+    const servicio_id = selectServicio ? selectServicio.value : '';
+
+    if (serviciosDoctor.length > 0 && !servicio_id) {
+        alert('Selecciona el servicio prestado.');
+        return;
+    }
+
     const selector = document.getElementById(`plantilla-${id_cita}`);
     const plantilla = selector ? selector.value : plantillasDisponibles[0];
     const esOdonto = plantilla === 'odontologia';
@@ -497,6 +541,7 @@ async function atenderConsulta(id_cita) {
         observaciones,
         plantilla,
         datos_extra,
+        servicio_id: servicio_id || null,
         peso: general(`peso-${id_cita}`),
         talla: general(`talla-${id_cita}`),
         presion_arterial: general(`presion-${id_cita}`),
@@ -1038,7 +1083,10 @@ const inputFecha = document.getElementById('inputFechaAgenda');
 inputFecha.value = fechaATexto(new Date());
 inputFecha.addEventListener('change', cargarAgenda);
 
-cargarPlantillas().then(cargarEspecialidadesDoctor).then(cargarAgenda);
+cargarPlantillas()
+    .then(cargarEspecialidadesDoctor)
+    .then(cargarServiciosDoctor)
+    .then(cargarAgenda);
 
 Notificaciones.montar({
     contenedor: document.getElementById('zonaCampana'),

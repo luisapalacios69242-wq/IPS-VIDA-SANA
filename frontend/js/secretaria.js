@@ -528,16 +528,9 @@ document.getElementById('btnBuscarPaciente').addEventListener('click', async () 
 });
 
 // ---------- Facturación ----------
-let serviciosFacturacion = [];
-
-async function cargarServiciosFacturacion() {
-    try {
-        const respuesta = await fetch(`${API}/api/facturas/servicios`);
-        serviciosFacturacion = await respuesta.json();
-    } catch (error) {
-        console.error(error);
-    }
-}
+// El servicio y el valor llegan ya definidos desde el servidor (el que marcó el doctor).
+// La secretaria solo elige la forma de pago.
+const consultasPorFacturar = {};
 
 function formatearMoneda(valor) {
     return `$${Number(valor).toLocaleString('es-CO')}`;
@@ -557,15 +550,22 @@ async function cargarConsultasPorFacturar() {
             return;
         }
 
+        consultas.forEach(c => { consultasPorFacturar[c.id_consulta] = c; });
+
         contenedor.innerHTML = consultas.length
             ? consultas.map(c => `
                 <div class="tarjeta" style="max-width:680px;">
                   <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
                       <strong>${c.hora.slice(0, 5)} · ${c.paciente_nombres} ${c.paciente_apellidos}</strong><br>
-                      <span style="font-size:0.8rem; color:#5f5e5a;">Dr(a). ${c.doctor_nombres} ${c.doctor_apellidos}</span>
+                      <span style="font-size:0.8rem; color:#5f5e5a;">Dr(a). ${c.doctor_nombres} ${c.doctor_apellidos}</span><br>
+                      <span style="font-size:0.8rem; color:#5f5e5a;">
+                        ${c.servicio_nombre
+                            ? `${c.servicio_nombre} · ${formatearMoneda(c.servicio_precio)}`
+                            : 'Servicio no definido'}
+                      </span>
                     </div>
-                    <button class="btn-generar-factura" data-consulta="${c.id_consulta}" style="width:auto;">Generar factura</button>
+                    <button class="btn-generar-factura" data-consulta="${c.id_consulta}" style="width:auto;" ${c.servicio_id ? '' : 'disabled'}>Generar factura</button>
                   </div>
                   <div id="factura-form-${c.id_consulta}"></div>
                 </div>
@@ -582,78 +582,48 @@ async function cargarConsultasPorFacturar() {
     }
 }
 
-async function abrirFormularioFactura(id_consulta) {
+function abrirFormularioFactura(id_consulta) {
     const zona = document.getElementById(`factura-form-${id_consulta}`);
+    const consulta = consultasPorFacturar[id_consulta];
 
     if (zona.innerHTML.trim()) {
         zona.innerHTML = '';
         return;
     }
 
-    if (serviciosFacturacion.length === 0) {
-        await cargarServiciosFacturacion();
+    if (!consulta || !consulta.servicio_id) {
+        zona.innerHTML = '<p class="error">No se pudo determinar el servicio de esta consulta.</p>';
+        return;
     }
-
-    const opcionesServicios = serviciosFacturacion.map(s =>
-        `<option value="${s.id_servicio}" data-precio="${s.precio}">${s.nombre} — ${formatearMoneda(s.precio)}</option>`
-    ).join('');
 
     zona.innerHTML = `
       <div style="border-top:1px solid #e5e3da; margin-top:12px; padding-top:12px;">
-        <label>Servicio</label>
-        <select id="fact-servicio-${id_consulta}">
+        <p style="margin:0 0 4px;"><strong>Servicio:</strong> ${consulta.servicio_nombre}</p>
+        <p style="margin:0 0 12px;"><strong>Valor a cobrar:</strong> ${formatearMoneda(consulta.servicio_precio)}</p>
+
+        <label>Forma de pago</label>
+        <select id="fact-forma-pago-${id_consulta}">
           <option value="">Selecciona...</option>
-          ${opcionesServicios}
+          <option value="efectivo">Efectivo</option>
+          <option value="tarjeta">Tarjeta</option>
+          <option value="transferencia">Transferencia</option>
         </select>
-
-        <label>Valor</label>
-        <input type="number" id="fact-valor-${id_consulta}" placeholder="Se llena al elegir el servicio">
-
-        <label>Estado</label>
-        <select id="fact-estado-${id_consulta}">
-          <option value="pendiente">Pendiente de pago</option>
-          <option value="pagada">Pagada en este momento</option>
-        </select>
-
-        <div id="fact-pago-${id_consulta}" class="oculto">
-          <label>Forma de pago</label>
-          <select id="fact-forma-pago-${id_consulta}">
-            <option value="efectivo">Efectivo</option>
-            <option value="tarjeta">Tarjeta</option>
-            <option value="transferencia">Transferencia</option>
-          </select>
-        </div>
 
         <button onclick="generarFactura(${id_consulta})">Generar factura</button>
         <button type="button" onclick="document.getElementById('factura-form-${id_consulta}').innerHTML = ''" style="background:#fff; color:#5f5e5a; border:1px solid #d3d1c7;">Cancelar</button>
         <p id="fact-mensaje-${id_consulta}" class="error"></p>
       </div>
     `;
-
-    const selectServicio = document.getElementById(`fact-servicio-${id_consulta}`);
-    selectServicio.addEventListener('change', () => {
-        const opcion = selectServicio.selectedOptions[0];
-        document.getElementById(`fact-valor-${id_consulta}`).value = opcion?.dataset.precio || '';
-    });
-
-    document.getElementById(`fact-estado-${id_consulta}`).addEventListener('change', (e) => {
-        document.getElementById(`fact-pago-${id_consulta}`).classList.toggle('oculto', e.target.value !== 'pagada');
-    });
 }
 
 async function generarFactura(id_consulta) {
     const mensaje = document.getElementById(`fact-mensaje-${id_consulta}`);
     mensaje.textContent = '';
 
-    const servicio_id = document.getElementById(`fact-servicio-${id_consulta}`).value;
-    const valor = document.getElementById(`fact-valor-${id_consulta}`).value;
-    const estado = document.getElementById(`fact-estado-${id_consulta}`).value;
-    const forma_pago = estado === 'pagada'
-        ? document.getElementById(`fact-forma-pago-${id_consulta}`).value
-        : null;
+    const forma_pago = document.getElementById(`fact-forma-pago-${id_consulta}`).value;
 
-    if (!servicio_id || valor === '') {
-        mensaje.textContent = 'Elige un servicio y verifica el valor.';
+    if (!forma_pago) {
+        mensaje.textContent = 'Elige la forma de pago.';
         return;
     }
 
@@ -664,7 +634,7 @@ async function generarFactura(id_consulta) {
             body: JSON.stringify({
                 consulta_id: id_consulta,
                 secretaria_id: usuario.id_secretaria,
-                servicio_id, valor, forma_pago, estado
+                forma_pago
             })
         });
 
@@ -736,7 +706,7 @@ async function marcarPagada(id_factura) {
         const respuesta = await fetch(`${API}/api/facturas/${id_factura}/pagar`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ forma_pago })
+            body: JSON.stringify({ forma_pago: forma_pago.trim().toLowerCase() })
         });
 
         const resultado = await respuesta.json();
